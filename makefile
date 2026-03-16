@@ -11,19 +11,17 @@ test:
 	@checkreadme
 
 install:
-	@[ -d ../../bin ] && \
-		ln -snf ../misc/$W/$W ../../bin/$W && printf "\033[33;1m%32.32s\033[0m\n" ../../bin/$W ||\
-		echo Create a Link in PATH to $W or create alias
+	printf "\033[33;1mAttempting to Create Relative Links from ${HOME}/bin .../\033[0m\n"
+	printf "\033[33;1m Alternatively, add `pwd` to PATH\033[0m\n"
+	ln -vsnf `realpath --relative-to=${HOME}/bin bkup` ${HOME}/bin/
+	ln -vsnf `realpath --relative-to=${HOME}/bin i2ico` ${HOME}/bin/
+	ln -vsnf `realpath --relative-to=${HOME}/bin hr` ${HOME}/bin/
+	ln -vsnf `realpath --relative-to=${HOME}/bin b4markdown` ${HOME}/bin/
+	ln -vsnf `realpath --relative-to=${HOME}/bin qutopia` ${HOME}/bin/
+	ln -vsnf `realpath --relative-to=${HOME}/bin txt2image` ${HOME}/bin/
+
 clean:
 	@true
-
-tar:
-	make
-	tar -czvf readme.tar.gz \
-		README.md .readme.html .header.html \
-		.htaccess .contents .info \
-		generate_table merge_table \
-		generate_files generate_html checkreadme
 
 test0:
 	mkdir -p tmp

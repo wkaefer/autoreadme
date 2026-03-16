@@ -69,7 +69,10 @@ AddDescription "🔩 Console Horizontal Break" "hr"
 <Files ~ "\*.o$">
   Require all denied
 </Files>
-<Files ~ "\.so$">
+<Files ~ "\*.so$">
+  Require all denied
+</Files>
+<Files ~ "\*.bak$">
   Require all denied
 </Files>
 
