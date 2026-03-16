@@ -1,4 +1,12 @@
+MAKEFLAGS=-s
 W=autoreadme
+
+.PHONY: install
+
+.DEFAULT:
+	@:
+
+LIST="{autoreadme,bkup,i2ico,hr,b4markdown,qutopia,txt2image}"
 
 all:
 	@printf "\033[32;1m%32.32s\033[0m\n" $W
@@ -11,14 +19,30 @@ test:
 	@checkreadme
 
 install:
-	printf "\033[33;1mAttempting to Create Relative Links from ${HOME}/bin .../\033[0m\n"
-	printf "\033[33;1m Alternatively, add `pwd` to PATH\033[0m\n"
-	ln -vsnf `realpath --relative-to=${HOME}/bin bkup` ${HOME}/bin/
-	ln -vsnf `realpath --relative-to=${HOME}/bin i2ico` ${HOME}/bin/
-	ln -vsnf `realpath --relative-to=${HOME}/bin hr` ${HOME}/bin/
-	ln -vsnf `realpath --relative-to=${HOME}/bin b4markdown` ${HOME}/bin/
-	ln -vsnf `realpath --relative-to=${HOME}/bin qutopia` ${HOME}/bin/
-	ln -vsnf `realpath --relative-to=${HOME}/bin txt2image` ${HOME}/bin/
+	@if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
+		echo "Either add `pwd` to your path or install at least autoreadme to ~/bin";\
+		echo " Error: No program specified.";\
+		echo "  Usage: make install <program_name>";\
+		echo "   Where program name is in ${LIST}";\
+		echo "    Use install_all to install all programs";\
+		exit 1;\
+	fi
+	@case "$(filter-out $@,$(MAKECMDGOALS))" in \
+		autoreadme|bkup|i2ico|hr|b4markdown|txt2image|qutopia) :;;\
+		*) echo "Error: program name must be in ${LIST}";exit 1;;\
+	esac
+	@echo "Installing $(filter-out $@,$(MAKECMDGOALS))..."
+	@ln -vsnf `realpath --relative-to=${HOME}/bin $(filter-out $@,$(MAKECMDGOALS))` ${HOME}/bin/
+	@echo "Installation complete for $(filter-out $@,$(MAKECMDGOALS))! 🌵"
+
+install_all:
+	@ln -vsnf `realpath --relative-to=${HOME}/bin autoreadme` ${HOME}/bin/
+	@ln -vsnf `realpath --relative-to=${HOME}/bin bkup`       ${HOME}/bin/
+	@ln -vsnf `realpath --relative-to=${HOME}/bin i2ico`      ${HOME}/bin/
+	@ln -vsnf `realpath --relative-to=${HOME}/bin hr`         ${HOME}/bin/
+	@ln -vsnf `realpath --relative-to=${HOME}/bin b4markdown` ${HOME}/bin/
+	@ln -vsnf `realpath --relative-to=${HOME}/bin txtimage`   ${HOME}/bin/
+	@ln -vsnf `realpath --relative-to=${HOME}/bin qutopia`    ${HOME}/bin/
 
 clean:
 	@true
@@ -58,7 +82,7 @@ __reset::
 	git remote add github https://www.github.com/wkaefer/autoreadme.git 
 	git remote set-url github git@github.com:wkaefer/autoreadme.git
 
-reset:
+reset: __reset
 	git fetch 
 	git checkout origin/main -ft
 	git config pull.rebase false

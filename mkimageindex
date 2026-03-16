@@ -44,7 +44,8 @@ do
                 if [ -f "${T}" ] ; then
                     mkdir -p .icons             1>&2
                     mv "${T}" "$I"              1>&2
-                    mogrify -resize x128  "$I"  1>&2
+                   #mogrify -resize x128  "$I"  1>&2
+                    mogrify -resize x128 -strip -define png:exclude-chunks=all -define png:compression-level=9 "$I" 1>&2
                     #print -- "$I created"       1>&2
                 else
                     :;#print -- "${T} not created" 1>&2
@@ -58,7 +59,8 @@ do
             else
                 mkdir -p .icons            1>&2
                 cp "$f" "$I"               1>&2
-                mogrify -resize x128 "$I"  1>&2
+               #mogrify -resize x128 "$I"  1>&2
+                mogrify -resize x128 -strip -define png:exclude-chunks=all -define png:compression-level=9 "$I" 1>&2
                 if [ $? -ne 0 ] ; then
                     exit 1
                 fi

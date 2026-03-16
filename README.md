@@ -2,6 +2,13 @@
 
 This project includes a suite of small utilities designed to automate the generation and maintenance of metadata and web-visible documentation from the project structure itself. These scripts collectively streamline the creation of human- and machine-readable descriptions for all files in a directory.
 
+autoreadme calls the set of utilities in order and 
+ uses b4markdown to pre-filters markdown before using
+  markdown_py(3.3.6) to create the html files.
+
+ToDo:
+ expand on b4markdown filters here { mermaid, include, highlighter }
+
 ---
 
 ## 🚀 Overview
