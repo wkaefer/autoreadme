@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+
+import sys
+import re
+
+# Files to ignore in the merged output
+IGNORE_LIST = {
+    "README.md", ".htaccess", ".readme.html", ".header.html",
+    ".contents", ".info", ".gitignore"
+}
+
+def parse_table_lines(lines):
+    """Parses table lines: returns {filename: (emoji, desc)}"""
+    entries = {}
+    for line in lines:
+        #   match = re.match(r'^\|\s*(!?\S+)\s*\|\s*(..)\s*\|\s*(.*?)\s*\|$', line)
+        # This regex accounts for escaped pipes (\|) in the description
+        # match = re.match(r'^\|\s*(!?\S+)\s*\|\s*(..)\s*\|((?:[^|\\]|\\.)+)\|$', line)
+        # Match rows with optional emoji and possible escaped pipes in the description
+        match = re.match(r'^\|\s*(!?\S*)\s*\|\s*(\S*)\s*\|\s*((?:[^|\\]|\\.)+)\s*\|$', line)
+        if match:
+            name, emoji, desc = match.groups()
+            if name.lstrip("!") not in IGNORE_LIST:
+                entries[name] = (emoji.strip(), desc.strip())
+    return entries
+
+def read_readme_table(path="README.md"):
+    entries = {}
+    with open(path, 'r') as f:
+        lines = f.readlines()
+    in_table = False
+    for line in lines:
+        if line.startswith('| File'):
+            in_table = True
+            continue
+        if line.startswith('|-'):
+            continue
+        if line.startswith('|:-'):
+            continue
+        if in_table:
+            if not line.strip().startswith('|'):
+                in_table = False
+                continue
+            parsed = parse_table_lines([line])
+            entries.update(parsed)
+    return entries
+
+def read_stdin_table():
+    lines = sys.stdin.read().splitlines()
+    filtered = [
+        line for line in lines
+        if not line.startswith('| File') and not re.match(r'^\|\-+', line)
+    ]
+    entries = parse_table_lines(filtered)
+    return {k.lstrip('!'): v for k, v in entries.items()}
+
+def format_table(merged):
+    filenames = sorted(
+        merged.keys(),
+        key=lambda x: (x.lstrip("!").startswith("."), x.lstrip("!").lower())
+    )
+
+    max_name_len = max(len(name) for name in filenames) + 2
+    max_desc_len = max(len(desc) for _, desc in merged.values())
+    emoji_col = 4
+
+    name_col = max(max_name_len, 20)
+    desc_col = max(max_desc_len, 20)
+
+    # Compute total width and ensure it's at least 72
+    total_width = name_col + emoji_col + desc_col + 6
+    if total_width < 72:
+        desc_col += (72 - total_width)
+        total_width = 72
+
+    header = f"| {'File'.ljust(name_col)} | 🧿 | {'Description'.ljust(desc_col)} |"
+    divider = f"|{'-' * (name_col + 2)}|{'-' * emoji_col}|{'-' * (desc_col + 2)}|"
+    rows = [header, divider]
+
+    for name in filenames:
+        emoji, desc = merged[name]
+        emoji_cell = f" {emoji} " if emoji else "   "
+        if name.startswith("!"):
+            name_cell = f"|{name.ljust(name_col + 1)}"
+        else:
+            name_cell = f"| {name.ljust(name_col)}"
+        rows.append(f"{name_cell} |{emoji_cell}| {desc.ljust(desc_col)} |")
+
+    return rows
+
+def main():
+    readme_entries = read_readme_table()
+    stdin_entries = read_stdin_table()
+    merged = {}
+
+    all_keys = set()
+    readme_keys = set(readme_entries.keys())
+    stdin_keys = set(stdin_entries.keys())
+
+    # Normalize readme keys for comparison
+    normalized_readme = {k.lstrip("!"): k for k in readme_keys}
+
+    # First, keep everything from README (with ! prefix if present)
+    for rkey in readme_keys:
+        norm_key = rkey.lstrip("!")
+        if norm_key in IGNORE_LIST:
+            continue
+        emoji, _ = stdin_entries.get(norm_key, ("  ", ""))
+        desc = readme_entries[rkey][1]
+        if readme_entries[rkey][0]:
+            emoji = readme_entries[rkey][0]
+        merged[rkey] = (emoji, desc)
+
+    # Then add remaining stdin entries not already in README
+    for skey in stdin_keys:
+        if skey in normalized_readme or skey in IGNORE_LIST:
+            continue
+        emoji, desc = stdin_entries[skey]
+        merged[skey] = (emoji, desc)
+
+    for line in format_table(merged):
+        print(line)
+
+if __name__ == "__main__":
+    main()

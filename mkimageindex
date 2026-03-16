@@ -1,0 +1,100 @@
+#!/bin/ksh93
+unset list
+if [ ! -n "$1" ] ; then
+    FIGNORE='@(.|..)'
+    for f in * ; do
+        typeset -l x="${f##*.}"
+        case "$x" in 
+            png|jpg|jpeg|gif|webp)  list="$list \"$f\"";;
+        esac
+    done
+else
+    for f  ; do
+        list="$list \"$f\""
+    done
+fi
+unset FIGNORE
+for f in $list
+do
+    #print $f 1>&2
+    f="${f#\"}"
+    f="${f%\"}"
+    if [ ! -d "$f" ] ; then
+    #print $f 1>&2
+    case "$f" in
+            */*)    echo no realative paths 1>&2;exit 1;;
+    esac
+    if [ ! -f "$f" ] ; then
+            echo "$f is not a file"
+            exit 1;
+    fi
+    I=".icons/${f%.*}.png"
+    typeset -l ext="${f##*.}"
+    #print ext=$ext 1>&2
+    case "$ext" in
+        txt|ascii|dat|asc)
+            if [ "$I" -nt "$f" ] ; then
+                :;#print -- "$I unchanged"         1>&2
+            else
+                T="${f%.*}_thumbnail.png"
+                txt2image "$f"                  1>&2
+                if [ $? -ne 0 ] ; then
+                    exit 1
+                fi
+                if [ -f "${T}" ] ; then
+                    mkdir -p .icons             1>&2
+                    mv "${T}" "$I"              1>&2
+                    mogrify -resize x128  "$I"  1>&2
+                    #print -- "$I created"       1>&2
+                else
+                    :;#print -- "${T} not created" 1>&2
+                fi
+            fi
+            print "<a href='$f' target='_blank'><img src='$I' /></a>"
+            ;;
+       gif|png|jpg|jpeg|bmp|webp)
+            if [ "$I" -nt "$f" ] ;then
+                :;#print -- "$I unchanged"    1>&2
+            else
+                mkdir -p .icons            1>&2
+                cp "$f" "$I"               1>&2
+                mogrify -resize x128 "$I"  1>&2
+                if [ $? -ne 0 ] ; then
+                    exit 1
+                fi
+                #print -- "$I created"      1>&2
+            fi
+            print "<a href='$f' target='_blank' ><img src='$I' /></a>"
+            ;;
+        html|ansi|makefile|ans|md)
+            print "Extension $ext ignored" 1>&2
+            ;;
+        *)
+            print "Should Extension $ext ignored" 1>&2
+            exit 1
+            ;;
+    esac
+    fi # end not a directory
+done
+
+# Ignore Check if we are in the Home Directory
+if [[ `pwd` != "$HOME" ]] ; then
+    unset xrm
+    for i in .icons/*.png ; do
+        f=${i%.*}
+        f=${f##*/}
+        for y in ${f}.* ; do
+            if [ -f "$y" ] ; then
+                break
+            fi
+        done
+        if [ ! -f "$y" ] ; then
+            print "Icon $i is missing original '${f}*'" 1>&2
+            xrm="$xrm $i"
+        fi
+    done
+    if [ -n "$xrm" ] ; then
+        echo rm $xrm 1>&2
+    fi
+fi
+
