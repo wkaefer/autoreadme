@@ -1,15 +1,24 @@
 # 📚 AutoReadme – Auto-generated File Manager Helpers
 
-This project includes a suite of small utilities designed to automate the generation and maintenance of metadata and web-visible documentation from the project structure itself. These scripts collectively streamline the creation of human- and machine-readable descriptions for all files in a directory.
+This is an organization tool to make sure each file is
+listed in README.md and each file listed in README.md
+exist or is optional.  The README.md should contain
+a markdown table in the Files Section of document.
+
+The command autoreadme uses the included utilities to:
+
+1. Update the Files Table with Files not included.
+2. Check the Files Table verers existing files.
+3. Create .htaccess file for use by Apache Web Server (AccessFileName)
+4. Create .readme.html for use by Apache Web Server
+5. Create .header.html for use by Apache Web Server
+6. Create .contents file as alternative AccessFileName (Apache Web Server)
+7. Create .info file for other tool use ie: tree
 
 autoreadme calls the set of utilities in order and 
- uses b4markdown to pre-filters markdown before using
+ uses b4markdown to pre-filter markdown before using
   markdown_py(3.3.6) to create the html files.
 
-ToDo:
- expand on b4markdown filters here { mermaid, include, highlighter }
-
----
 
 ## 🚀 Overview
 
@@ -20,8 +29,9 @@ The tools work together like a pipeline:
 3. **`generate_files`** – Produces helper files like `.htaccess`, `.readme.html`, etc.
 4. **`generate_html`** – Extracts and converts Markdown headers and content to HTML.
 5. **`checkreadme`** – Verifies all files are accounted for in the `README.md`.
-6. **`bkup`** - Save copies of files with incrementing extensions in .backups folder.
-7. **`hr`** - Miscellaneous Utility, Command-Line Horizontal Break Display.
+6. **`b4markdown`** - Pre/Post filter wrapper around `markdown_py`.
+7. **`bkup`** - Save copies of files with incrementing extensions in .backups folder.
+8. **`hr`** - Miscellaneous Utility, Command-Line Horizontal Break Display.
 
 ---
 
@@ -110,9 +120,32 @@ Validates that all present files are documented in `README.md`'s file table. Hel
 #### Example:
 ```bash
 ./checkreadme
+$ checkreadme
+✅ README.md file table is valid.
 ```
 
-ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛋᛏᛒᛖᛗᛚᛜᛟᛞᛞᛟᛜᛚᛗᛖᛒᛏᛋᛉᛈ
+### 6. `b4markdown` 
+
+Preprocesses Markdown before passing it to `markdown_py`.
+
+#### Syntax reference
+
+```text
+[# comment
+@- Highlight gray
+@+ Highlight cyan
+@g Highlight green
+@b Highlight blue
+@p Highlight purple
+@y Highlight yellow
+@r Highlight red
+@o Highlight orange
+@@ Section break
+
+#include file.md
+
+rewrite mermaid output postprocessing
+```
 
 ## 🔁 Unified Command: `autoreadme` 🧼📖
 
