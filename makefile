@@ -9,7 +9,8 @@ W=autoreadme
 LIST="{autoreadme,bkup,i2ico,hr,b4markdown,qutopia,txt2image}"
 
 all:
-	@printf "\033[32;1m%32.32s\033[0m\n" $W
+	@:
+#	@printf "\033[32;1m%32.32s\033[0m\n" $W
 
 test:
 	generate_table
@@ -31,18 +32,14 @@ install:
 		autoreadme|bkup|i2ico|hr|b4markdown|txt2image|qutopia) :;;\
 		*) echo "Error: program name must be in ${LIST}";exit 1;;\
 	esac
-	@echo "Installing $(filter-out $@,$(MAKECMDGOALS))..."
-	@ln -vsnf `realpath --relative-to=${HOME}/bin $(filter-out $@,$(MAKECMDGOALS))` ${HOME}/bin/
-	@echo "Installation complete for $(filter-out $@,$(MAKECMDGOALS))! 🌵"
+#	@echo "Installing $(filter-out $@,$(MAKECMDGOALS))..."
+	@L=`realpath --relative-to=${HOME}/bin $(filter-out $@,$(MAKECMDGOALS))` && \
+		ln -snf $$L ${HOME}/bin/ && printf "\033[36;1m%42.42s\033[0m\n" $$L
+#	@ln -vsnf `realpath --relative-to=${HOME}/bin $(filter-out $@,$(MAKECMDGOALS))` ${HOME}/bin/
+#	@echo "Installation complete for $(filter-out $@,$(MAKECMDGOALS))! 🌵"
 
 install_all:
-	@ln -vsnf `realpath --relative-to=${HOME}/bin autoreadme` ${HOME}/bin/
-	@ln -vsnf `realpath --relative-to=${HOME}/bin bkup`       ${HOME}/bin/
-	@ln -vsnf `realpath --relative-to=${HOME}/bin i2ico`      ${HOME}/bin/
-	@ln -vsnf `realpath --relative-to=${HOME}/bin hr`         ${HOME}/bin/
-	@ln -vsnf `realpath --relative-to=${HOME}/bin b4markdown` ${HOME}/bin/
-	@ln -vsnf `realpath --relative-to=${HOME}/bin txtimage`   ${HOME}/bin/
-	@ln -vsnf `realpath --relative-to=${HOME}/bin qutopia`    ${HOME}/bin/
+	@for p in autoreadme bkup i2ico hr b4markdown qutopia txt2image; do make install $$p; done
 
 clean:
 	@true
@@ -79,8 +76,8 @@ __reset::
 	rm -rf .git
 	git init
 	git remote add origin git@shazam:/srv/git/autoreadme
-	git remote add github https://www.github.com/wkaefer/autoreadme.git 
-	git remote set-url github git@github.com:wkaefer/autoreadme.git
+	git remote add github https://www.github.com/${GITHUB_NAME}/autoreadme.git 
+	git remote set-url github git@github.com:${GITHUB_NAME}/autoreadme.git
 
 reset: __reset
 	git fetch 
