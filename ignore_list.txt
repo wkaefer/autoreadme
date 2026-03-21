@@ -46,3 +46,6 @@ nohup.out
 __pycache__
 tmp
 *.bak
+.github
+.vscode
+

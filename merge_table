@@ -54,11 +54,20 @@ def read_stdin_table():
     entries = parse_table_lines(filtered)
     return {k.lstrip('!'): v for k, v in entries.items()}
 
+def natural_sort_key(name):
+    s = name.lstrip("!")
+    hidden = s.startswith(".")
+    parts = re.split(r'(\d+)', s.lower())
+    parts = [int(p) if p.isdigit() else p for p in parts]
+    return (hidden, parts)
+
 def format_table(merged):
-    filenames = sorted(
-        merged.keys(),
-        key=lambda x: (x.lstrip("!").startswith("."), x.lstrip("!").lower())
-    )
+    #filenames = sorted(
+    #    merged.keys(),
+    #    key=lambda x: (x.lstrip("!").startswith("."), x.lstrip("!").lower())
+    #)
+
+    filenames = sorted(merged.keys(), key=natural_sort_key)
 
     max_name_len = max(len(name) for name in filenames) + 2
     max_desc_len = max(len(desc) for _, desc in merged.values())
