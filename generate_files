@@ -36,6 +36,7 @@ def escape_html(s):
 
 def parse_table_entries(readme_path):
     entries = []
+    files_section_found = False
     in_table = False
 
     if not readme_path.exists():
@@ -44,6 +45,11 @@ def parse_table_entries(readme_path):
     with readme_path.open() as f:
         for line in f:
             stripped = line.strip()
+            if stripped.startswith("## Files"):
+                files_section_found = True
+                continue
+            if not files_section_found:
+                continue
             if stripped.startswith("| File"):
                 in_table = True
                 continue

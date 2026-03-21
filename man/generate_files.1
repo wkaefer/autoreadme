@@ -1,0 +1,69 @@
+.TH GENERATE_FILES 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+generate_files \- Generate Apache auxiliary files from README.md table
+.SH SYNOPSIS
+.B generate_files
+[\fB\-\-no-htaccess\fR] [\fB\-\-create_header\fR] [\fB\-\-ignore\fR \fIFILE\fR...] [\fB\-\-ignore-patterns\fR \fIPATTERN\fR...]
+.SH DESCRIPTION
+.B generate_files
+parses the file table in README.md and generates Apache web server auxiliary files:
+.IP \(bu 2
+.B .htaccess
+Apache server directives with file descriptions
+.IP \(bu 2
+.B .contents
+Alternative AccessFileName with file descriptions
+.IP \(bu 2
+.B .info
+File information for the tree command
+.PP
+The tool also processes special markdown comments in README.md that contain Apache directives.
+.SH OPTIONS
+.TP
+.B \-\-no-htaccess
+Do not generate .htaccess file
+.TP
+.B \-\-create_header
+Write full header into .header.html (requires Apache IndexOptions +SuppressHTMLPreamble)
+.TP
+.B \-\-ignore \fIFILE\fR...
+List of sensitive files/directories to deny access to. Default: .backups .git ..netrc .netrc .ssh Downloads notfolder.jpg
+.TP
+.B \-\-ignore-patterns \fIPATTERN\fR...
+Regex patterns of file names to deny access to. Default: *.a *.o *.so *.bak
+.SH FILES
+.TP
+.B README.md
+Source file containing the file table and optional Apache directives
+.TP
+.B .htaccess
+Generated Apache configuration file
+.TP
+.B .contents
+Generated alternative Apache configuration
+.TP
+.B .info
+Generated file information for tree command
+.SH APACHE DIRECTIVES
+Special markdown comments in README.md can contain Apache directives:
+.PP
+.nf
+[.htaccess AddIcon "/.icons/oscar.jpg" tmp   ]: #
+[.contents AddDescription "Custom desc" file.txt]: #
+.fi
+.SH EXAMPLES
+.TP
+Generate all files with defaults:
+.B generate_files
+.TP
+Generate without .htaccess:
+.B generate_files \-\-no-htaccess
+.TP
+Ignore additional files:
+.B generate_files \-\-ignore secret.txt private/
+.SH SEE ALSO
+.BR generate_html (1),
+.BR autoreadme (1),
+.BR generate_table (1)
+.SH AUTHOR
+AutoReadme project

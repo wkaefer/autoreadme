@@ -1,232 +1,562 @@
-# 📚 AutoReadme – Auto-generated File Manager Helpers
+# 📚 AutoReadme – Automated README Management Suite
 
-This is an organization tool to make sure each file is
-listed in README.md and each file listed in README.md
-exist or is optional.  The README.md should contain
-a markdown table in the Files Section of document.
+A comprehensive suite of Unix pipeline utilities that validates, generates, and manages README.md files while automatically creating Apache web server auxiliary files. AutoReadme ensures your project documentation stays synchronized with actual directory contents.
 
-The command autoreadme uses the included utilities to:
+## ✨ Features
 
-1. Update the Files Table with Files not included.
-2. Check the Files Table verers existing files.
-3. Create .htaccess file for use by Apache Web Server (AccessFileName)
-4. Create .readme.html for use by Apache Web Server
-5. Create .header.html for use by Apache Web Server
-6. Create .contents file as alternative AccessFileName (Apache Web Server)
-7. Create .info file for other tool use ie: tree
-
-autoreadme calls the set of utilities in order and 
- uses b4markdown to pre-filter markdown before using
-  markdown_py(3.3.6) to create the html files.
-
-
-## 🚀 Overview
-
-The tools work together like a pipeline:
-
-1. **`generate_table`** – Builds a file table with emojis and descriptions.
-2. **`merge_table`** – Merges manually edited table data with auto-generated entries.
-3. **`generate_files`** – Produces helper files like `.htaccess`, `.readme.html`, etc.
-4. **`generate_html`** – Extracts and converts Markdown headers and content to HTML.
-5. **`checkreadme`** – Verifies all files are accounted for in the `README.md`.
-6. **`b4markdown`** - Pre/Post filter wrapper around `markdown_py`.
-7. **`bkup`** - Save copies of files with incrementing extensions in .backups folder.
-8. **`hr`** - Miscellaneous Utility, Command-Line Horizontal Break Display.
+- **Automated Table Management** – Generate and merge file tables automatically
+- **Validation** – Ensure README.md matches actual project directory structure
+- **Apache Integration** – Create .htaccess, .contents, .header.html, and .readme.html files
+- **Git Aware** – Respects .gitignore and custom ignore lists
+- **Flexible** – Use individual tools or the unified `autoreadme` command
+- **Emoji Support** – Automatic file type emoji assignment
+- **HTML Generation** – Convert Markdown to HTML using markdown_py
+- **Backup System** – Automatic versioned backups before any changes
 
 ---
 
-## 🔧 Tools in Detail
+## 🚀 Quick Start
 
-### 1. `generate_table` 🧮
+### Installation
 
-Scans the directory for files (excluding ignored or git-ignored ones), associates emojis based on extension/type, and creates a Markdown table with emojis and descriptions.
+Clone the repository and optionally install the tools:
 
-#### Example:
 ```bash
-./generate_table 
+git clone <repository-url>
+cd autoreadme
+make install_all           # Install all tools to ~/bin or PATH
 ```
-```ngix
-#| File                 | 🧿 | Description                             |
-#|----------------------|----|-----------------------------------------|
-#| autoreadme           | 📄 |                                         |
-#| bkup                 | 📄 |                                         |
-#| checkreadme          | 📘 |                                         |
-#| generate_files       | 🐍 |                                         |
-#| generate_html        | 📄 |                                         |
-#| makefile             | 🚂 |                                         |
-#| merge_table          | 🐍 |                                         |
+
+### Basic Usage
+
+Update your README.md automatically:
+
+```bash
+./autoreadme                       # Run full pipeline
+./autoreadme --no-htaccess        # Skip .htaccess generation
+./autoreadme --create_header      # Create full HTML header
+```
+
+Generate individual components:
+
+```bash
+./generate_table                   # List all files with emojis
+./generate_table | ./merge_table README.md   # Merge with existing entries
+./checkreadme                      # Validate README.md
 ```
 
 ---
 
-### 2. `merge_table` 🔗
+## 🔧 How It Works
 
-Combines your handcrafted entries in `README.md` with newly generated ones to avoid losing your personal edits while staying up-to-date.
+AutoReadme implements a Unix pipeline architecture where each tool performs a single, well-defined task:
 
-#### Example:
-```bash
-./generate_table | ./merge_table README.md 
 ```
-```ngix
-#| File                  | 🧿 | Description                               |
-#|-----------------------|----|-------------------------------------------|
-#| autoreadme            | 📄 | ReCreate Files                            |
-#| bkup                  | 📄 | Save incrementinig copies to .backups/    |
-#| checkreadme           | 📘 | Validate Listed files verses Existing     |
-#|!checkreadme.ksh       |    | An Older Version                          |
-#| generate_files        | 🐍 | Create .htaccess, .contents, .info        |
-#| generate_html         | 📄 | Create .readme.html, .header.html         |
-#| generate_table        | 🐍 | Create Files Table from Existing          |
-#| makefile              | 🚂 | Instructions                              |
-#| merge_table           | 🐍 | Merge Generated and README.md Table       |
+Directory Scan
+    ↓
+generate_table (creates file table from filesystem)
+    ↓
+merge_table (preserves user descriptions from README.md)
+    ↓
+README.md Updated
+    ↓
+generate_html (converts to HTML)
+    ↓
+generate_files (creates Apache auxiliary files)
+    ↓
+checkreadme (validates consistency)
 ```
----
 
-### 3. `generate_files` 🏗️
-
-Parses the README file’s file table and generates:
-
-- `.htaccess` (for Apache config)
-- `.readme.html` (full README content)
-- `.header.html` (project title only)
-- `.contents` (Alternate AccessFileName in Apache)
-- `.info` for tree command
-
-#### Example:
-
-```bash
-./generate_files
-```
+Each step can be run independently or chained together automatically by `autoreadme`.
 
 ---
 
-### 4. `generate_html` 🌐
+## 📖 Tools in Detail
 
-Runs in `ksh93`. Uses `b4markdown` to convert Markdown into minimalistic HTML output:
+### `autoreadme` 🧼
 
-- **`.header.html`** – Title block from `README.md`
-- **`.readme.html`** – Entire `README.md` minus file list
+**The Unified Command** – Orchestrates the entire pipeline in the correct sequence.
 
-#### Example:
 ```bash
-./generate_html
+autoreadme [options]
+```
+
+**What it does:**
+1. Backs up the current README.md
+2. Generates a fresh file table
+3. Merges it with existing README.md entries (preserving descriptions)
+4. Updates README.md with the merged table
+5. Generates HTML files (.header.html, .readme.html)
+6. Creates Apache auxiliary files (.htaccess, .contents, .info)
+7. Validates everything with checkreadme
+
+**Options:**
+- `--no-htaccess` – Skip .htaccess generation
+- `--create_header` – Create full HTML document header
+- `--ignore FILE...` – Files to deny access to
+- `--ignore-patterns PATTERN...` – Regex patterns to deny
+
+---
+
+### `generate_table` 🧮
+
+**File Scanner** – Builds a Markdown table from the current directory.
+
+```bash
+generate_table [-v|--verbose]
+```
+
+**Output:** Markdown table with file names, type emojis, and empty descriptions
+**Features:**
+- Detects file types using MIME detection
+- Assigns appropriate emojis based on file extension
+- Respects .gitignore and ignore_list.txt
+- Outputs to stdout (designed for piping)
+
+**Example:**
+```bash
+./generate_table
 ```
 
 ---
 
-### 5. `checkreadme` 🕵️
-Validates that all present files are documented in `README.md`'s file table. Helps prevent “lost files” from slipping through the cracks.
+### `merge_table` 🔗
 
-#### Example:
+**Description Merger** – Combines generated table with existing README.md entries.
+
+This is the key to not losing your manual descriptions when updating the file list.
+
 ```bash
-./checkreadme
-$ checkreadme
-✅ README.md file table is valid.
+generate_table | merge_table README.md
 ```
 
-### 6. `b4markdown` 
+**What it preserves:**
+- User-written descriptions from README.md
+- Files marked with '!' prefix (older/removed files)
+- Emoji assignments
+- Natural sort order
 
-Preprocesses Markdown before passing it to `markdown_py`.
+---
 
-#### Syntax reference
+### `checkreadme` 🕵️
+
+**Validator** – Ensures README.md table matches actual directory contents.
+
+```bash
+checkreadme
+```
+
+**Checks for:**
+- ✅ Files that exist but aren't listed
+- ✅ Files listed but don't exist
+- ✅ Missing or empty descriptions
+- ✅ Malformed table rows
+
+**Exit Status:**
+- 0 = Valid
+- 1 = Issues found
+
+---
+
+### `generate_html` 🌐
+
+**Markdown to HTML** – Converts README.md to HTML files for Apache.
+
+```bash
+generate_html [--create_header]
+```
+
+**Creates:**
+- `.header.html` – Project title (first header)
+- `.readme.html` – Full README minus the Files section
+
+**Features:**
+- Uses b4markdown preprocessor
+- Supports markdown_py syntax highlighting
+- Adjustable CSS via MARKDOWN_CSS environment variable
+- Mermaid diagram support
+
+---
+
+### `generate_files` 🏗️
+
+**Apache Generator** – Creates all Apache web server auxiliary files.
+
+```bash
+generate_files [options]
+```
+
+**Creates:**
+- `.htaccess` – Apache directives with AddDescription entries
+- `.contents` – Alternative AccessFileName
+- `.info` – File information for tree command
+
+**Options:**
+- `--no-htaccess` – Skip .htaccess generation
+- `--ignore FILE...` – Files to deny access to
+- `--ignore-patterns PATTERN...` – Regex patterns to deny
+
+---
+
+### `b4markdown` 🔄
+
+**Markdown Preprocessor** – Adds syntax highlighting before markdown_py conversion.
+
+```bash
+b4markdown [file]
+```
+
+**Features:**
+
+| Prefix | Effect |
+|--------|--------|
+| `@-` | Gray highlight |
+| `@+` | Cyan highlight |
+| `@g` | Green highlight |
+| `@b` | Blue highlight |
+| `@p` | Purple highlight |
+| `@y` | Yellow highlight |
+| `@r` | Red highlight |
+| `@o` | Orange highlight |
+| `@@` | Page break |
+| `#include filename` | Include another file |
+
+---
+
+### `bkup` 💾
+
+**Backup Creator** – Creates versioned backups of files.
+
+```bash
+bkup [-r] file [file...]
+```
+
+**Features:**
+- Creates incrementing numbered backups (.001, .002, etc.)
+- Max 999 backups per file (configurable via MAX_BKUP)
+- Stores in .backups/ folder
+- `-r` flag moves (removes) original file
+
+**Example:**
+```bash
+bkup README.md       # Copy to .backups/README.md.001
+bkup *.txt          # Backup all text files
+```
+
+---
+
+### `hr` 📏
+
+**Decorative Horizontal Rules** – Generate styled terminal dividers.
+
+```bash
+hr [options] [text]
+```
+
+**Modes:**
+- `ascii` – Alternating / and \ characters
+- `emoji` – Random emojis from sequence
+- `box` – Unicode box drawing characters
+- `card` – Playing card symbols
+
+**Available Themes:**
+- `mythical`, `flowers`, `succulents`, `veggies`, `fruits`, `trees`
+- `cosmic`, `birds`, `catsdogs`, `food`, `weather`, `hearts`, `tools`, `faces`
+
+**Options:**
+- `-c, --color` – Random foreground colors
+- `-z, --back` – Random background colors
+- `-m, --mode` – Character mode (ascii/emoji/box/card)
+- `-l, --lines` – Number of lines to draw
+- `-T, --theme` – Use a theme
+
+**Examples:**
+```bash
+hr                                          # Simple rule
+hr "Section Header"                         # Centered text
+hr -m box -l 2 -c                          # Box mode, 2 lines, colored
+hr --theme flowers                          # Flower emoji theme
+```
+
+---
+
+### `qutopia` 🎭
+
+**Terminal Art & Philosophy** – Display images and philosophical wisdom before dramatic exit.
+
+```bash
+qutopia
+```
+
+**Features:**
+- Renders random images from ~/.local/share/qutopia/qutopia/
+- Displays philosophical maxims in Unicode boxes
+- Falls back to ANSI art if no images available
+- Creates crash logs for entertainment
+- Terminates dramatically with kill -9
+
+**Philosophical Themes:**
+- 🪞 Know Thyself – Self-awareness and introspection
+- ⚖️ Nothing in Excess – Balance and moderation
+- ☠️ Surety Brings Ruin – Warnings about overconfidence
+
+---
+
+## 📋 README.md File Table Format
+
+AutoReadme requires a Markdown table under a `## Files ##` section:
 
 ```text
-[# comment
-@- Highlight gray
-@+ Highlight cyan
-@g Highlight green
-@b Highlight blue
-@p Highlight purple
-@y Highlight yellow
-@r Highlight red
-@o Highlight orange
-@@ Section break
+--->## Files ##    
 
-#include file.md
-
-rewrite mermaid output postprocessing
+    | File                 | 🧿 | Description                   |    
+    |----------------------|----|-------------------------------|    
+    | config.py            | 🐍 | Configuration module          |    
+    | script.sh            | 🔩 | Main executable script        |
 ```
 
-## 🔁 Unified Command: `autoreadme` 🧼📖
-
-Now accepts and forwards arguments to sub-scripts like `generate_files`.
-
-#### Example:
-```bash
-autoreadme --no-htaccess
-```
-
-A script that ties all of this together into one easy-to-run command. It:
-
-- Generates a fresh table (`generate_table`)
-- Merges it into the existing README (`merge_table`)
-- Replaces the old table in-place
-- Rebuilds auxiliary files (`generate_html`, `generate_files`)
-- Verifies everything (`checkreadme`)
+**Special Syntax:**
+- Files beginning with `!` are marked as "older/removed" but still documented
+- Empty descriptions are flagged as errors by checkreadme
+- Descriptions can include escaped pipes: `\|`
 
 ---
 
-This collection of script are used to convert a README.md
-file into files used by apache and other tools.
+## ⚙️ Configuration
 
-- .htaccess - Default AccessFileName
-- .contents - Another AccessFileName 
-- .readme.html - for apache directory listing
-- .header.html - for apache directory listings
-- .info for the tree command
+### Environment Variables
 
-The scripts validate that the File Grid Displayed
-in the README.md file matches the contents of the directory.
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `IGNORE_LIST` | Custom ignore list path | ~/.config/autoreadme/ignore_list.txt |
+| `MARKDOWN` | Markdown filter command | b4markdown |
+| `MARKDOWN_CSS` | CSS file path for HTML | /.markdown.css |
+| `MAX_BKUP` | Max backups per file | 999 |
+| `HR` | Environment shortcut for hr utility | (none) |
 
-Conventions:
+### Ignore Lists
 
-- Files begining with a '!' reference Older files which have been removed
-- Files ignored by git are also ignore in the table, but can be listed.
-- Markdown Comment may also be directives to include in the .htaccess or .contents file.
+Three-tier precedence (highest to lowest):
+1. Environment variable: `IGNORE_LIST=path/to/file`
+2. User config: `~/.config/autoreadme/ignore_list.txt`
+3. Local fallback: `./ignore_list.txt`
+
+### Apache Directives
+
+Embed Apache directives in README.md markdown comments:
+
 ```markdown
-[.htaccess AddIcon "/.icons/oscar.jpg" tmp   ]: #
-```
-- Markdown to HTML is provided by the b4markdown script which calls markdown_py
-- Defined a Different filter by setting Environment Variable MARKDOWN
-
-## Images ##
-
-Use the mkimageindex script to create a thumbnail of each image
-and include with 'C' like syntax.
-
-```sh
-mkimageindex abc.txt xyz.jpg > .imageindex
+[.htaccess AddIcon "/.icons/image.gif" *.jpg ]: #
+[.contents AddDescription "My custom files" folder/ ]: #
 ```
 
-Optionally Use #include "<file>" to include directive which will be included the generated markdown.
+These are extracted and added to the generated files.
 
-```c
-#include "examplefile.html"
+---
+
+## 🎯 Common Workflows
+
+### Update README & Generate Files
+
+```bash
+autoreadme
 ```
+
+### Update Just the Table (No HTML/Apache files)
+
+```bash
+generate_table | merge_table README.md > README.new
+mv README.new README.md
+```
+
+### Validate Without Modifying
+
+```bash
+checkreadme
+```
+
+### Create Backups for All Project Files
+
+```bash
+bkup *.py *.sh *.md
+```
+
+### Generate Files with Custom Ignores
+
+```bash
+autoreadme --ignore secret.txt private/ --ignore-patterns "*.bak"
+```
+
+---
+
+## 📦 Dependencies
+
+| Dependency | Purpose | Required |
+|-----------|---------|----------|
+| Python 3.10+ | Core tools (generate_table, merge_table, generate_files, checkreadme) | Yes |
+| markdown_py 3.3.6+ | Markdown to HTML conversion | Yes (for HTML generation) |
+| ksh93 | Shell for generate_html and b4markdown | Yes (for HTML generation) |
+| chafa | Terminal image rendering (qutopia only) | No (optional for qutopia) |
+| git | .gitignore awareness | Recommended |
+
+---
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+make test              # Full pipeline test
+make install           # Install single tool
+make install_all       # Install all tools
+```
+
+---
+
+## 🔨 Makefile Commands
+
+```bash
+make test              # Run full pipeline validation
+make install <tool>    # Install a single tool
+make install_all       # Install all tools to PATH
+```
+
+---
+
+## 📄 File Conventions
+
+### File Type Emojis
+
+Common emoji assignments by file type:
+
+| Pattern | Emoji | Type |
+|---------|-------|------|
+| `.py` | 🐍 | Python script |
+| `.sh` | 🔩 | Shell script |
+| `.md` | 📝 | Markdown |
+| `.html` | 🌐 | Web document |
+| `.css` | 🎨 | Stylesheet |
+| `Makefile` | 🚂 | Build file |
+| `.json` | 🔢 | JSON data |
+| `.jpg/.png` | 🖼️ | Image |
+
+---
+
+## 📚 Man Pages
+
+Comprehensive man pages are available for all utilities:
+
+```bash
+man autoreadme
+man generate_table
+man merge_table
+man checkreadme
+man generate_files
+man generate_html
+man b4markdown
+man bkup
+man hr
+man qutopia
+```
+
+---
+
+## 🎨 Output Files Reference
+
+After running `autoreadme`, the following files are created/updated:
+
+| File | Purpose |
+|------|---------|
+| `README.md` | Updated with merged file table |
+| `.htaccess` | Apache server directives |
+| `.contents` | Alternative Apache configuration |
+| `.header.html` | Project title for directory listing |
+| `.readme.html` | Full README as HTML |
+| `.info` | File metadata for tree command |
+| `.backups/*.001` | Versioned backups |
+
+---
+
+## 🤝 Contributing
+
+The AutoReadme suite is designed for easy extension. Each tool can be:
+- Used independently as a Unix pipeline component
+- Modified for specific needs
+- Combined with other Unix tools
+
+Respect the philosophy: do one thing and do it well.
+
+---
+
+## 📝 Guides & Examples
+
+### Example: Minimal Project Setup
+
+```bash
+# Initialize README with basic structure
+autoreadme
+
+# Add your file descriptions manually in README.md
+# Then run again to validate
+autoreadme
+```
+
+### Example: Apache Server Integration
+
+```bash
+# Set up Apache to use generated files
+autoreadme
+
+# In httpd.conf:
+# AccessFileName .htaccess
+# IndexStyleSheet "/.markdown.css"
+# HeaderName .header.html
+# ReadmeName .readme.html
+```
+
+### Example: Backup Before Major Changes
+
+```bash
+# Backup all Markdown files
+bkup *.md
+
+# Make changes...
+# Restore from backup if needed:
+# cp .backups/README.md.001 README.md
+```
+
+---
+
+## 📄 License
+
+Apache License 2.0 (standard practice for web server tools)
+
+---
 
 ## Files ##
 
-| File                 | 🧿 | Description                                              |
-|----------------------|----|----------------------------------------------------------|
-| autoreadme           | 🔩 | ReCreate Files                                           |
-| b4markdown           | 🔩 | markdown_py wrapper, used by generate_html               |
-| bkup                 | 🔩 | Save incrementinig copies to .backups/                   |
-| checkreadme          | 🐍 | Validate Listed files verses Existing                    |
-| generate_files       | 🐍 | Create .htaccess, .contents, .info                       |
-| generate_html        | 🐍 | Create .readme.html, .header.html                        |
-| generate_table       | 🐍 | Create Files Table from Existing                         |
-| help.txt             | 📃 | Text document, cat help.txt \| more                      |
-| hr                   | 🔩 | Console Horizontal Break                                 |
-| i2ico                | 🔩 | Convert an Image to an .ico {16,32,48,256}               |
-| ignore_list.py       | 🐍 | Module to Read ~/.config/autoreadme/ignore_list.txt      |
-| ignore_list.txt      | 📃 | Default List of Ignored Files and Directories            |
-| makefile             | 🚂 | Instructions                                             |
-| markdown.css         | 🎨 | Example markdown.css file                                |
-| merge_table          | 🐍 | Merge Generated and README.md Table                      |
-| mkimageindex         | 🔩 | Generate imageindex (.imageindex to include in markdown) |
-| qutopia              | 🔩 | Helpful Guidance                                         |
-| recycle.jpg          | ♻️ | Image to place in .backups as folder.jpg                 |
-| txt2image            | 🐍 | Create thumbnail of text or image files, mkimageindex    |
+| File                 | 🧿 | Description                                        |
+|----------------------|----|----------------------------------------------------|
+| autoreadme           | 🔩 | Unified command orchestrating the full pipeline    |
+| b4markdown           | 🔩 | Markdown preprocessor with syntax highlighting     |
+| bkup                 | 🔩 | Create versioned backups to .backups/ directory    |
+| checkreadme          | 🐍 | Validate README.md against actual directory        |
+| generate_files       | 🐍 | Create .htaccess, .contents, .info files           |
+| generate_html        | 🔩 | Convert README.md to .header.html and .readme.html |
+| generate_table       | 🐍 | Create file table with emojis from directory scan  |
+| help.txt             | 📃 | Help documentation for autoreadme command          |
+| hr                   | 🔩 | Generate decorative horizontal terminal rules      |
+| i2ico                | 🔩 | Convert images to ICO format files                 |
+| ignore_list.py       | 🐍 | Module to read ignore list from configuration      |
+| ignore_list.txt      | 📃 | Default list of files and directories to ignore    |
+| makefile             | 🚂 | Build and installation instructions                |
+| man                  | 📁 | Manual pages for all utilities                     |
+| markdown.css         | 🎨 | Example CSS for styling generated HTML             |
+| merge_table          | 🐍 | Merge Generated and README.md Table                |
+| mkimageindex         | 🔩 | Generate image thumbnail index for inclusion       |
+| qutopia              | 🔩 | Terminal art and philosophical wisdom display      |
+| recycle.jpg          | ♻️ | Folder icon for .backups directory                 |
+| txt2image            | 🐍 | Create thumbnails of text and image files          |
 
-[.htaccess AddIcon "/.icons/oscar.jpg" tmp   ]: #
-[//]: # vim: syntax=markdown ts=2 sw=2 sts=2 et 
+
+[//]: # vim: syntax=markdown ts=2 sw=2 sts=2 et

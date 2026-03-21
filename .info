@@ -2,41 +2,41 @@
 # ___🌵___________🌵_______🌵______________________🚂🚃🚃🚃_____🌲🌲🌲
 
 ignore_list.txt
-	"📃 Default List of Ignored Files and Directories"
+	"📃 Default list of files and directories to ignore"
 ignore_list.py
-	"🐍 Module to Read ~/.config/autoreadme/ignore_list.txt"
+	"🐍 Module to read ignore list from configuration"
 generate_table
-	"🐍 Create Files Table from Existing"
+	"🐍 Create file table with emojis from directory scan"
 generate_files
-	"🐍 Create .htaccess, .contents, .info"
+	"🐍 Create .htaccess, .contents, .info files"
 notfolder.jpg
 	"🛑 Access Denied"
 generate_html
-	"🐍 Create .readme.html, .header.html"
+	"🔩 Convert README.md to .header.html and .readme.html"
 mkimageindex
-	"🔩 Generate imageindex (.imageindex to include in markdown)"
+	"🔩 Generate image thumbnail index for inclusion"
 markdown.css
-	"🎨 Example markdown.css file"
+	"🎨 Example CSS for styling generated HTML"
 .readme.html
 	"Created from README.md for Apache Server"
 .header.html
 	"Created from README.md for Apache Server"
 checkreadme
-	"🐍 Validate Listed files verses Existing"
+	"🐍 Validate README.md against actual directory"
 merge_table
 	"🐍 Merge Generated and README.md Table"
 recycle.jpg
-	"♻️ Image to place in .backups as folder.jpg"
-b4markdown
-	"🔩 markdown_py wrapper, used by generate_html"
+	"♻️ Folder icon for .backups directory"
 autoreadme
-	"🔩 ReCreate Files"
+	"🔩 Unified command orchestrating the full pipeline"
+b4markdown
+	"🔩 Markdown preprocessor with syntax highlighting"
 .gitignore
 	"Files git should ignore"
 Downloads
 	"🛑 Access Denied"
 txt2image
-	"🐍 Create thumbnail of text or image files, mkimageindex"
+	"🐍 Create thumbnails of text and image files"
 .machines
 	"🏭 Directory of Different Machine Types"
 README.md
@@ -50,19 +50,19 @@ README.md
 .backups
 	"🛑 Access Denied"
 makefile
-	"🚂 Instructions"
+	"🚂 Build and installation instructions"
 help.txt
-	"📃 Text document, cat help.txt | more"
+	"📃 Help documentation for autoreadme command"
 .machine
 	"⚙️ Symbolic Link to machines/xxx"
 ..netrc
 	"🛑 Access Denied"
 qutopia
-	"🔩 Helpful Guidance"
+	"🔩 Terminal art and philosophical wisdom display"
 .netrc
 	"🛑 Access Denied"
 i2ico
-	"🔩 Convert an Image to an .ico {16,32,48,256}"
+	"🔩 Convert images to ICO format files"
 .info
 	"Created from README.md for tree command"
 .ssh
@@ -70,6 +70,8 @@ i2ico
 .git
 	"🛑 Access Denied"
 bkup
-	"🔩 Save incrementinig copies to .backups/"
+	"🔩 Create versioned backups to .backups/ directory"
+man
+	"📁 Manual pages for all utilities"
 hr
-	"🔩 Console Horizontal Break"
+	"🔩 Generate decorative horizontal terminal rules"

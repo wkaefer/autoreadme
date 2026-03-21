@@ -1,0 +1,111 @@
+.TH AUTOREADME 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+autoreadme \- Generate auxiliary files from README.md for Apache web servers
+.SH SYNOPSIS
+.B autoreadme
+[\fB\-h\fR|\fB\-\-help\fR] [\fB\-v\fR] [\fB\-\-create_header\fR] [\fB\-\-no-htaccess\fR] [\fB\-\-ignore\fR \fIFILE\fR...] [\fB\-\-ignore-patterns\fR \fIPATTERN\fR...]
+.SH DESCRIPTION
+.B autoreadme
+is a unified command that manages and validates README.md files in a project directory. It maintains a Markdown table of files with metadata, generates helper files for Apache web servers, and converts Markdown to HTML.
+.PP
+The command executes a full pipeline that:
+.IP \(bu 2
+Generates a fresh file table from the directory contents
+.IP \(bu 2
+Merges it with existing README.md table entries (preserving manual descriptions)
+.IP \(bu 2
+Updates README.md with the merged table
+.IP \(bu 2
+Creates Apache auxiliary files (.htaccess, .contents, .info, .readme.html, .header.html)
+.IP \(bu 2
+Converts Markdown to HTML using b4markdown wrapper
+.IP \(bu 2
+Validates the README.md table against actual directory contents
+.SH FILES TABLE FORMAT
+The README.md file must contain a Markdown table under a "## Files ##" section:
+.PP
+.nf
+| File       | 🧿 | Description                |
+|------------|----|----------------------------|
+| autoreadme | 🔩 | ReCreate Files             |
+| b4markdown | 🔩 | markdown_py wrapper        |
+| bkup       | 🔩 | Save copies to .backups/   |
+.fi
+.PP
+Files beginning with '!' are marked as older/removed but still documented.
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Show help message and exit.
+.TP
+.B \-v
+Enable verbose output during table generation.
+.TP
+.B \-\-create_header
+Write full header into .header.html (requires Apache IndexOptions +SuppressHTMLPreamble).
+.TP
+.B \-\-no-htaccess
+Do not generate .htaccess file.
+.TP
+.B \-\-ignore \fIFILE\fR...
+List of sensitive files/directories to deny access to in generated Apache files. Default: .backups .git ..netrc .netrc .ssh Downloads notfolder.jpg
+.TP
+.B \-\-ignore-patterns \fIPATTERN\fR...
+Regex patterns of file names to deny access to. Default: *.a *.o *.so *.bak
+.SH ENVIRONMENT VARIABLES
+.TP
+.B MARKDOWN_CSS
+Relative location of CSS file for styling HTML output. Default: /.markdown.css
+.br
+Configure in httpd.conf with: IndexStyleSheet "/.markdown.css"
+.TP
+.B MARKDOWN
+Alternative markdown filter command. Default: b4markdown
+.SH FILES
+.TP
+.B README.md
+Main documentation file containing the file table under "## Files ##" section.
+.TP
+.B ~/.config/autoreadme/ignore_list.txt
+User-specific ignore list file (overrides default ignore_list.txt).
+.TP
+.B ignore_list.txt
+Local ignore list file.
+.TP
+.B .htaccess
+Apache server directives generated from README.md table.
+.TP
+.B .contents
+Alternative Apache AccessFileName with server directives.
+.TP
+.B .readme.html
+Full README.md content converted to HTML for Apache directory listings.
+.TP
+.B .header.html
+Project title block from README.md converted to HTML.
+.TP
+.B .info
+File information for use with the tree command.
+.SH EXAMPLES
+.TP
+Run full pipeline with default settings:
+.B autoreadme
+.TP
+Generate files without .htaccess:
+.B autoreadme \-\-no-htaccess
+.TP
+Create full header in .header.html:
+.B autoreadme \-\-create_header
+.TP
+Ignore additional files:
+.B autoreadme \-\-ignore secret.txt private/
+.SH SEE ALSO
+.BR generate_table (1),
+.BR merge_table (1),
+.BR generate_files (1),
+.BR generate_html (1),
+.BR checkreadme (1),
+.BR b4markdown (1),
+.BR bkup (1)
+.SH AUTHOR
+AutoReadme project

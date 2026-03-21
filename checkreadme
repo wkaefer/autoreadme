@@ -36,8 +36,14 @@ def parse_readme_table(path=README_PATH):
     with open(path, "r") as f:
         lines = f.readlines()
 
+    files_section_found = False
     in_table = False
     for line in lines:
+        if line.strip().startswith("## Files"):
+            files_section_found = True
+            continue
+        if not files_section_found:
+            continue
         if line.strip().startswith("| File"):
             in_table = True
             continue

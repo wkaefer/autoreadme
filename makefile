@@ -1,4 +1,5 @@
 MAKEFLAGS=-s
+PREFIX=${HOME}
 W=autoreadme
 
 .PHONY: install
@@ -33,9 +34,9 @@ install:
 		*) echo "Error: program name must be in ${LIST}";exit 1;;\
 	esac
 #	@echo "Installing $(filter-out $@,$(MAKECMDGOALS))..."
-	@L=`realpath --relative-to=${HOME}/bin $(filter-out $@,$(MAKECMDGOALS))` && \
-		ln -snf $$L ${HOME}/bin/ && printf "\033[36;1m%42.42s\033[0m\n" $$L
-#	@ln -vsnf `realpath --relative-to=${HOME}/bin $(filter-out $@,$(MAKECMDGOALS))` ${HOME}/bin/
+	@L=`realpath --relative-to=${PREFIX}/bin $(filter-out $@,$(MAKECMDGOALS))` && \
+		ln -snf $$L ${PREFIX}/bin/ && printf "\033[36;1m%42.42s\033[0m\n" $$L
+#	@ln -vsnf `realpath --relative-to=${PREFIX}/bin $(filter-out $@,$(MAKECMDGOALS))` ${PREFIX}/bin/
 #	@echo "Installation complete for $(filter-out $@,$(MAKECMDGOALS))! 🌵"
 
 install_all:
