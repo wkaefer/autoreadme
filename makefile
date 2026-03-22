@@ -1,5 +1,6 @@
 MAKEFLAGS=-s
-PREFIX=${HOME}
+PREFIX=${HOME}/.local
+MANPREFIX=${PREFIX}/share/man
 W=autoreadme
 
 .PHONY: install
@@ -7,7 +8,7 @@ W=autoreadme
 .DEFAULT:
 	@:
 
-LIST="{autoreadme,bkup,i2ico,hr,b4markdown,qutopia,txt2image}"
+P=autoreadme bkup i2ico hr b4markdown qutopia txt2image
 
 all:
 	@:
@@ -21,39 +22,18 @@ test:
 	@checkreadme
 
 install:
-	@make install_ignore_list
-	@if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
-		echo "Either add `pwd` to your path or install at least autoreadme to ~/bin";\
-		echo " Error: No program specified.";\
-		echo "  Usage: make install <program_name>";\
-		echo "   Where program name is in ${LIST}";\
-		echo "    Use install_all to install all programs";\
-		exit 1;\
-	fi
-	@case "$(filter-out $@,$(MAKECMDGOALS))" in \
-		autoreadme|bkup|i2ico|hr|b4markdown|txt2image|qutopia) :;;\
-		*) echo "Error: program name must be in ${LIST}";exit 1;;\
-	esac
-#	@echo "Installing $(filter-out $@,$(MAKECMDGOALS))..."
-	@L=`realpath --relative-to=${PREFIX}/bin $(filter-out $@,$(MAKECMDGOALS))` && \
-		cp $$L ${PREFIX}/bin/ && printf "\033[36;1m%32.32s -> \033[32m%s\033[0m\n" $$L
-#	@ln -vsnf `realpath --relative-to=${PREFIX}/bin $(filter-out $@,$(MAKECMDGOALS))` ${PREFIX}/bin/
-#	@echo "Installation complete for $(filter-out $@,$(MAKECMDGOALS))! 🌵"
-
-
-install_ignore_list::
+	@mkdir -p ${PREFIX}/bin ${MANPREFIX}/man1
+	@for p in $P ; do \
+		cp $${p} "${PREFIX}/bin/"; \
+		I=`echo ${PREFIX} | sed 's,^${HOME},~,'` ; \
+		printf "\033[36;1m%32.32s -> \033[32m%s\033[0m\n" $$p "$$I/bin/$$p";\
+	done
 	@mkdir -vp ${HOME}/.config/autoreadme
 	@I="${HOME}/.config/autoreadme/ignore_list.txt";\
 	if [ ! -f "$$I" ] ; then \
 		printf "\033[36;1m%32.32s -> \033[32m%s\033[0m\n" ignore_list.txt "~$${I##*${HOME}}"; \
 		cp ignore_list.txt "$$I";\
 	fi
-
-install_all:
-	@for p in autoreadme bkup i2ico hr b4markdown qutopia txt2image; do make install $$p; done
-	@+make install_ignore_list
-
-
 clean:
 	@true
 
