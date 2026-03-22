@@ -32,10 +32,21 @@ make install_all           # Install all tools to ~/bin or PATH
 Update your README.md automatically:
 
 ```bash
-./autoreadme                       # Run full pipeline
+./autoreadme                      # Run full pipeline
 ./autoreadme --no-htaccess        # Skip .htaccess generation
 ./autoreadme --create_header      # Create full HTML header
 ```
+
+If Files Section is Missing, Append to README.md
+the following three lines (without the -> prefix).
+
+```text
+->## Files ##
+->
+->| File
+```
+
+and the table will be included.
 
 Generate individual components:
 

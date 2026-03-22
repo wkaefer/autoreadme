@@ -25,6 +25,7 @@ def get_git_ignored_files():
     try:
         result = subprocess.run(
             # ToDo: Can't seem to escape the depths without using find
+            # ToDo: Why not use git check-ignore like in checkreadme ?
             # ["git", "ls-files", "--others", "-i", "--exclude-standard"],
             ["git", "ls-files", "-o", "-i", "--exclude-standard", "--directory" ], # -- ':./*' ':(exclude):./*/*'
             stdout=subprocess.PIPE,

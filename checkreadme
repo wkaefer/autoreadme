@@ -4,6 +4,19 @@ import os
 import subprocess
 import unicodedata
 import re
+import sys
+
+import argparse
+
+parser = argparse.ArgumentParser(description="Validate README.md file table.")
+parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output.")
+args = parser.parse_args()
+VERBOSE = args.verbose
+
+def verbose(msg):
+    if VERBOSE:
+        print(msg, file=sys.stderr)
+
 
 README_PATH = "README.md"
 from ignore_list import IGNORE_LIST
@@ -62,6 +75,7 @@ def parse_readme_table(path=README_PATH):
                 # Replace escaped pipes with actual pipe character
                 description = description.replace(r'\|', '|')
                 entries[filename] = description
+                verbose(" "+filename+" is in README.md")
             else:
                 print(f"⚠️  Malformed table row: {line.strip()}")
                 continue
@@ -73,6 +87,7 @@ def validate_readme():
     errors = []
 
     for f in files:
+        verbose(" Checking File "+f)
         if f not in entries:
             errors.append(f"⚠️  File '{f}' exists but is not listed in README.md")
         elif is_blank(entries[f]):
@@ -84,6 +99,7 @@ def validate_readme():
         # Report if not reported above
         if name not in files:
             normalized = name.lstrip("*")
+            verbose(" Checking Entry "+normalized)
             if not os.path.exists(normalized) and not is_git_ignored(normalized):
                 errors.append(f"❌ File '{name}' listed in README.md but not found")
             if is_blank(entries[name]):
@@ -100,3 +116,5 @@ def validate_readme():
 
 if __name__ == "__main__":
     raise SystemExit(validate_readme())
+
+# vi: ft=python et ts=4 sw=4 sts=4

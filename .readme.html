@@ -23,10 +23,17 @@ make install_all           # Install all tools to ~/bin or PATH
 </code></pre>
 <h3>Basic Usage</h3>
 <p>Update your README.md automatically:</p>
-<pre><code class="language-bash">./autoreadme                       # Run full pipeline
+<pre><code class="language-bash">./autoreadme                      # Run full pipeline
 ./autoreadme --no-htaccess        # Skip .htaccess generation
 ./autoreadme --create_header      # Create full HTML header
 </code></pre>
+<p>If Files Section is Missing, Append to README.md
+the following three lines (without the -&gt; prefix).</p>
+<pre><code class="language-text">-&gt;## Files ##
+-&gt;
+-&gt;| File
+</code></pre>
+<p>and the table will be included.</p>
 <p>Generate individual components:</p>
 <pre><code class="language-bash">./generate_table                   # List all files with emojis
 ./generate_table | ./merge_table README.md   # Merge with existing entries
