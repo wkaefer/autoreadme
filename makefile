@@ -36,7 +36,7 @@ install:
 	esac
 #	@echo "Installing $(filter-out $@,$(MAKECMDGOALS))..."
 	@L=`realpath --relative-to=${PREFIX}/bin $(filter-out $@,$(MAKECMDGOALS))` && \
-		ln -snf $$L ${PREFIX}/bin/ && printf "\033[36;1m%42.42s\033[0m\n" $$L
+		cp $$L ${PREFIX}/bin/ && printf "\033[36;1m%32.32s -> \033[32m%s\033[0m\n" $$L
 #	@ln -vsnf `realpath --relative-to=${PREFIX}/bin $(filter-out $@,$(MAKECMDGOALS))` ${PREFIX}/bin/
 #	@echo "Installation complete for $(filter-out $@,$(MAKECMDGOALS))! 🌵"
 
@@ -45,7 +45,7 @@ install_ignore_list::
 	@mkdir -vp ${HOME}/.config/autoreadme
 	@I="${HOME}/.config/autoreadme/ignore_list.txt";\
 	if [ ! -f "$$I" ] ; then \
-		printf "\033[36;1m%42.42s\033[0m\n" "~$${I##*${HOME}}"; \
+		printf "\033[36;1m%32.32s -> \033[32m%s\033[0m\n" ignore_list.txt "~$${I##*${HOME}}"; \
 		cp ignore_list.txt "$$I";\
 	fi
 
