@@ -21,7 +21,9 @@ test:
 	@generate_html
 	@checkreadme
 
+# ToDo: qutopia needs an image in share/qutopia/...
 install:
+	@mkdir -p "${PREFIX}/bin" "${MANPREFIX}/man/man1" "${PREFIX}/share/autoreadme" "${PREFIX}/share/qutopia"
 	@for p in $P ; do make F=$$p D="${PREFIX}/bin" _install_ln_bin; done
 	@for p in man/man1/* ; do test -f $$p && make F=$$p D="${MANPREFIX}/man1" _install_ln_man; done
 	@F=ignore_list.txt;\
