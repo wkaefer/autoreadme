@@ -22,18 +22,28 @@ test:
 	@checkreadme
 
 install:
-	@mkdir -p ${PREFIX}/bin ${MANPREFIX}/man1
-	@for p in $P ; do \
-		cp $${p} "${PREFIX}/bin/"; \
-		I=`echo ${PREFIX} | sed 's,^${HOME},~,'` ; \
-		printf "\033[36;1m%32.32s -> \033[32m%s\033[0m\n" $$p "$$I/bin/$$p";\
-	done
-	@mkdir -vp ${HOME}/.config/autoreadme
-	@I="${HOME}/.config/autoreadme/ignore_list.txt";\
-	if [ ! -f "$$I" ] ; then \
-		printf "\033[36;1m%32.32s -> \033[32m%s\033[0m\n" ignore_list.txt "~$${I##*${HOME}}"; \
-		cp ignore_list.txt "$$I";\
-	fi
+	@for p in $P ; do make F=$$p D="${PREFIX}/bin" _install_ln_bin; done
+	@for p in man/man1/* ; do test -f $$p && make F=$$p D="${MANPREFIX}/man1" _install_ln_man; done
+	@F=ignore_list.txt;\
+	I="${HOME}/.config/autoreadme/$$F";\
+	if [ ! -f "$$I" ] ; then make F=$$F D="${HOME}/.config/autoreadme" _install_cp; fi
+
+_install_ln_bin:
+	@I=`echo ${D} | sed 's,^${HOME},~,'` ; \
+	 L=`realpath --relative-to="$D" $F`; \
+	 printf "\033[32;1m%32.32s == \033[36m%s\033[0m\n" $F "$$I/$F";\
+	 ln -snf $$L "$D/"
+_install_ln_man:
+	@I=`echo ${D} | sed 's,^${HOME},~,'` ; \
+	 L=`realpath --relative-to="$D" $F`; \
+	 printf "\033[35;1m%32.32s == \033[36m%s\033[0m\n" $F "$$I/$F";\
+	 ln -snf $$L "$D/"
+_install_cp:
+	@I=`echo ${D} | sed 's,^${HOME},~,'` ; \
+	 printf "\033[34;1m%32.32s -> \033[33m%s\033[0m\n" $F "$$I/$F"
+	@mkdir -p "$D"
+	@cp $F "$D/"
+
 clean:
 	@true
 
