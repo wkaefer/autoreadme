@@ -21,6 +21,7 @@ test:
 	@checkreadme
 
 install:
+	@make install_ignore_list
 	@if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
 		echo "Either add `pwd` to your path or install at least autoreadme to ~/bin";\
 		echo " Error: No program specified.";\
@@ -39,8 +40,19 @@ install:
 #	@ln -vsnf `realpath --relative-to=${PREFIX}/bin $(filter-out $@,$(MAKECMDGOALS))` ${PREFIX}/bin/
 #	@echo "Installation complete for $(filter-out $@,$(MAKECMDGOALS))! 🌵"
 
+
+install_ignore_list::
+	@mkdir -vp ${HOME}/.config/autoreadme
+	@I="${HOME}/.config/autoreadme/ignore_list.txt";\
+	if [ ! -f "$$I" ] ; then \
+		printf "\033[36;1m%42.42s\033[0m\n" "~$${I##*${HOME}}"; \
+		cp ignore_list.txt "$$I";\
+	fi
+
 install_all:
 	@for p in autoreadme bkup i2ico hr b4markdown qutopia txt2image; do make install $$p; done
+	@+make install_ignore_list
+
 
 clean:
 	@true

@@ -170,3 +170,5 @@ def main():
 if __name__ == "__main__":
     main()
     print("✅ Success: .htaccess, .contents and .info created from $README ✨")
+
+# vi: ft=python et ts=4 sw=4 sts=4

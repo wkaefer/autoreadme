@@ -48,4 +48,4 @@ tmp
 *.bak
 .github
 .vscode
-
+.dotnet

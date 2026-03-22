@@ -24,13 +24,26 @@ from ignore_list import IGNORE_LIST
 def get_git_ignored_files():
     try:
         result = subprocess.run(
-            ["git", "ls-files", "--others", "-i", "--exclude-standard"],
+            # ToDo: Can't seem to escape the depths without using find
+            # ["git", "ls-files", "--others", "-i", "--exclude-standard"],
+            ["git", "ls-files", "-o", "-i", "--exclude-standard", "--directory" ], # -- ':./*' ':(exclude):./*/*'
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             check=True,
             text=True
         )
-        return set(result.stdout.splitlines())
+
+        # return set(result.stdout.splitlines())
+        paths = set()
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.endswith(("/", "@")):
+                line = line[:-1]
+            paths.add(line)
+            verbose("ignore "+line)
+        return paths
     except subprocess.CalledProcessError:
         return set()
 
@@ -239,3 +252,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# vi: ft=python et ts=4 sw=4 sts=4
