@@ -23,32 +23,20 @@ test:
 
 # ToDo: autoreadme needs something in share/autoreadme
 # ToDo: qutopia needs an image in share/qutopia/...
-install:
-	@mkdir -p "${PREFIX}/bin" "${MANPREFIX}/man/man1" # "${PREFIX}/share/autoreadme" "${PREFIX}/share/qutopia"
-	@for p in $P ; do make F=$$p D="${PREFIX}/bin" _install_ln_bin; done
-	@for p in man/man1/* ; do test -f $$p && make F=$$p D="${MANPREFIX}/man1" _install_ln_man; done
-	@F=ignore_list.txt;\
-	I="${HOME}/.config/autoreadme/$$F";\
-	if [ ! -f "$$I" ] ; then make F=$$F D="${HOME}/.config/autoreadme" _install_cp; fi
-
-_install_ln_bin:
-	@I=`echo ${D} | sed 's,^${HOME},~,'` ; \
-	 L=`realpath --relative-to="$D" $F`; \
-	 printf "\033[32;1m%32.32s == \033[36m%s\033[0m\n" $F "$$I/$F";\
-	 ln -snf $$L "$D/"
-_install_ln_man:
-	@I=`echo ${D} | sed 's,^${HOME},~,'` ; \
-	 L=`realpath --relative-to="$D" $F`; \
-	 printf "\033[35;1m%32.32s == \033[36m%s\033[0m\n" $F "$$I/$F";\
-	 ln -snf $$L "$D/"
-_install_cp:
-	@I=`echo ${D} | sed 's,^${HOME},~,'` ; \
-	 printf "\033[34;1m%32.32s -> \033[33m%s\033[0m\n" $F "$$I/$F"
-	@mkdir -p "$D"
-	@cp $F "$D/"
+install: install-man
+	@mkdir -p "${PREFIX}/bin" "${PREFIX}/share/autoreadme" "${HOME}/.config/autoreadme"
+	@cp -v autoreadme b4markdown bkup checkreadme "${PREFIX}/share/autoreadme/"
+	@cp -v generate_files generate_html generate_table "${PREFIX}/share/autoreadme/"
+	@cp -v hr i2ico "${PREFIX}/share/autoreadme/"
+	@cp -v markdown.css merge_table mkimageindex qutopia recycle.jpg "${PREFIX}/share/autoreadme/"
+	@cp -v txt2image "${PREFIX}/share/autoreadme/"
+	@mkdir -p "${HOME}/.config/qutopia"
+	@test -f "${HOME}/.config/autoreadme/ignore_list.txt" || \
+	 cp -v ignore_list.txt "${HOME}/.config/autoreadme/"
+	@ln -svnf ../share/autoreadme/autoreadme ${PREFIX}/bin/autoreadme
 
 clean:
-	@true
+	@rm -rf __pycache__
 
 test0:
 	mkdir -p tmp
