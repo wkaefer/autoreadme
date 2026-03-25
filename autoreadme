@@ -28,14 +28,24 @@ if ! command -v bkup >/dev/null 2>&1; then
 fi
 
 if [ ! -f README.md ] ; then
-    echo -u2 "🤖 README.md not found, creating file."
-cat << EOF >> README.md
+    echo -u2 "🤖 README.md not found, creating template."
+cat << 'EOF' > README.md
 # Unknown Project #
 
 ## Files ##
 
-| File
-|-----
+| File                 | 🧿 | Description          |
+|----------------------|----|----------------------|
+
+EOF
+elif ! grep -Eq '^##[[:space:]]+Files([[:space:]]*##)?[[:space:]]*$' README.md ; then
+    echo -u2 "🤖 README.md missing Files section, appending template."
+cat << 'EOF' >> README.md
+
+## Files ##
+
+| File                 | 🧿 | Description          |
+|----------------------|----|----------------------|
 
 EOF
 fi

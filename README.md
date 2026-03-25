@@ -37,16 +37,8 @@ Update your README.md automatically:
 ./autoreadme --create_header      # Create full HTML header
 ```
 
-If Files Section is Missing, Append to README.md
-the following three lines (without the -> prefix).
-
-```text
-->## Files ##
-->
-->| File
-```
-
-and the table will be included.
+If `README.md` does not exist, `autoreadme` creates a starter template automatically.
+If `README.md` exists but has no `## Files ##` section, the section scaffold is appended automatically.
 
 Generate individual components:
 

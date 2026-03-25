@@ -10,6 +10,10 @@ is a unified command that manages and validates README.md files in a project dir
 .PP
 The command executes a full pipeline that:
 .IP \(bu 2
+Creates README.md from a template if it does not exist
+.IP \(bu 2
+Appends a "## Files ##" section template if README.md exists but is missing it
+.IP \(bu 2
 Generates a fresh file table from the directory contents
 .IP \(bu 2
 Merges it with existing README.md table entries (preserving manual descriptions)
@@ -22,7 +26,8 @@ Converts Markdown to HTML using b4markdown wrapper
 .IP \(bu 2
 Validates the README.md table against actual directory contents
 .SH FILES TABLE FORMAT
-The README.md file must contain a Markdown table under a "## Files ##" section:
+The README.md file uses a Markdown table under a "## Files ##" section.
+If missing, \fBautoreadme\fR creates or appends this section automatically:
 .PP
 .nf
 | File       | 🧿 | Description                |
