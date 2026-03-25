@@ -27,13 +27,8 @@ make install_all           # Install all tools to ~/bin or PATH
 ./autoreadme --no-htaccess        # Skip .htaccess generation
 ./autoreadme --create_header      # Create full HTML header
 </code></pre>
-<p>If Files Section is Missing, Append to README.md
-the following three lines (without the -&gt; prefix).</p>
-<pre><code class="language-text">-&gt;## Files ##
--&gt;
--&gt;| File
-</code></pre>
-<p>and the table will be included.</p>
+<p>If <code>README.md</code> does not exist, <code>autoreadme</code> creates a starter template automatically.
+If <code>README.md</code> exists but has no <code>## Files ##</code> section, the section scaffold is appended automatically.</p>
 <p>Generate individual components:</p>
 <pre><code class="language-bash">./generate_table                   # List all files with emojis
 ./generate_table | ./merge_table README.md   # Merge with existing entries
