@@ -30,6 +30,7 @@ install: install-man
 	@cp -v hr i2ico "${PREFIX}/share/autoreadme/"
 	@cp -v markdown.css merge_table mkimageindex qutopia recycle.jpg "${PREFIX}/share/autoreadme/"
 	@cp -v txt2image "${PREFIX}/share/autoreadme/"
+	@cp -v ignore_list.py ignore_list.txt "${PREFIX}/share/autoreadme/"
 	@mkdir -p "${HOME}/.config/qutopia"
 	@test -f "${HOME}/.config/autoreadme/ignore_list.txt" || \
 	 cp -v ignore_list.txt "${HOME}/.config/autoreadme/"
