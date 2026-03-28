@@ -97,7 +97,7 @@ autoreadme [options]
 - `--no-htaccess` – Skip .htaccess generation
 - `--create_header` – Create full HTML document header
 - `--ignore FILE...` – Files to deny access to
-- `--ignore-patterns PATTERN...` – Regex patterns to deny
+- `--ignore-patterns PATTERN...` – Patterns to deny; also used as the base list for `.htaccess`
 
 ---
 
@@ -197,7 +197,7 @@ generate_files [options]
 **Options:**
 - `--no-htaccess` – Skip .htaccess generation
 - `--ignore FILE...` – Files to deny access to
-- `--ignore-patterns PATTERN...` – Regex patterns to deny
+- `--ignore-patterns PATTERN...` – Patterns to deny; `.htaccess` also appends `~/.config/autoreadme/ignore_htaccess.txt`
 
 ---
 
@@ -344,6 +344,12 @@ Three-tier precedence (highest to lowest):
 2. User config: `~/.config/autoreadme/ignore_list.txt`
 3. Local fallback: `./ignore_list.txt`
 
+Additional `.htaccess` deny patterns can be appended from:
+- `~/.config/autoreadme/ignore_htaccess.txt`
+
+This file is optional, ignores blank lines and `#` comments, and only affects generated `.htaccess` files.
+The repository includes a sample `ignore_htaccess.txt` that install copies into `~/.config/autoreadme/` if you do not already have one.
+
 ### Apache Directives
 
 Embed Apache directives in README.md markdown comments:
@@ -389,6 +395,8 @@ bkup *.py *.sh *.md
 ```bash
 autoreadme --ignore secret.txt private/ --ignore-patterns "*.bak"
 ```
+
+For persistent extra `.htaccess` patterns, add one pattern per line to `~/.config/autoreadme/ignore_htaccess.txt`.
 
 ---
 
@@ -551,6 +559,7 @@ Apache License 2.0 (standard practice for web server tools)
 | hr                   | 🔩 | Generate decorative horizontal terminal rules      |
 | i2ico                | 🔩 | Convert images to ICO format files                 |
 | ignore_list.py       | 🐍 | Module to read ignore list from configuration      |
+| ignore_htaccess.txt  | 📃 | Sample .htaccess-only ignore pattern list          |
 | ignore_list.txt      | 📃 | Default list of files and directories to ignore    |
 | makefile             | 🚂 | Build and installation instructions                |
 | man                  | 📁 | Manual pages for all utilities                     |

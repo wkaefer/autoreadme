@@ -30,7 +30,13 @@ Write full header into .header.html (requires Apache IndexOptions +SuppressHTMLP
 List of sensitive files/directories to deny access to. Default: .backups .git ..netrc .netrc .ssh Downloads notfolder.jpg
 .TP
 .B \-\-ignore-patterns \fIPATTERN\fR...
-Regex patterns of file names to deny access to. Default: *.a *.o *.so *.bak
+Patterns of file names to deny access to. Default: *.a *.o *.so *.bak
+.br
+When generating
+.BR .htaccess ,
+entries from
+.B ~/.config/autoreadme/ignore_htaccess.txt
+are appended if that file exists.
 .SH FILES
 .TP
 .B README.md
@@ -38,6 +44,10 @@ Source file containing the file table and optional Apache directives
 .TP
 .B .htaccess
 Generated Apache configuration file
+.TP
+.B ~/.config/autoreadme/ignore_htaccess.txt
+Optional user-specific deny patterns appended to generated
+.BR .htaccess .
 .TP
 .B .contents
 Generated alternative Apache configuration

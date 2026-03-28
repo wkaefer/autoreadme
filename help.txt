@@ -20,9 +20,11 @@ Options:
   --ignore [IGNORE ...]
                         List of sensitive files to deny access to
   --ignore-patterns [IGNORE_PATTERNS ...]
-                        Regex patterns of file names to deny access to
+                        Patterns of file names to deny access to
 
 Create ~/.config/autoreadme/ignore_list.txt for non-default ignore list.
+Create ~/.config/autoreadme/ignore_htaccess.txt to append extra
+                        .htaccess-only deny patterns.
 
 Environment Variables:
 

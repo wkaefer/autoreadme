@@ -6,6 +6,8 @@ import argparse
 import re
 from pathlib import Path
 
+HTACCESS_IGNORE_FILE = Path.home() / ".config" / "autoreadme" / "ignore_htaccess.txt"
+
 # Internal-only static knownlist descriptions
 knownlist = {
     ".gitignore": "Files git should ignore",
@@ -33,6 +35,18 @@ def parse_arguments():
 
 def escape_html(s):
     return html.escape(s)
+
+def load_ignore_patterns(ignore_file):
+    if not ignore_file.is_file():
+        return []
+
+    patterns = []
+    with ignore_file.open() as f:
+        for line in f:
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#"):
+                patterns.append(stripped)
+    return patterns
 
 def parse_table_entries(readme_path):
     entries = []
@@ -159,13 +173,14 @@ def main():
     args = parse_arguments()
     base_path = Path(args.directory)
     readme_path = base_path / "README.md"
+    htaccess_ignore_patterns = args.ignore_patterns + load_ignore_patterns(HTACCESS_IGNORE_FILE)
 
     sorted_entries = get_sorted_entries(readme_path, args.ignore)
 
     generate_contents(readme_path, base_path / ".contents", args.ignore, args.ignore_patterns, sorted_entries)
     generate_info(base_path / ".info", sorted_entries)
     if not args.no_htaccess:
-        generate_htaccess(readme_path, base_path / ".htaccess", args.ignore, args.ignore_patterns, sorted_entries)
+        generate_htaccess(readme_path, base_path / ".htaccess", args.ignore, htaccess_ignore_patterns, sorted_entries)
 
 if __name__ == "__main__":
     main()

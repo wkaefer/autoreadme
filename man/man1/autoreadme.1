@@ -56,7 +56,13 @@ Do not generate .htaccess file.
 List of sensitive files/directories to deny access to in generated Apache files. Default: .backups .git ..netrc .netrc .ssh Downloads notfolder.jpg
 .TP
 .B \-\-ignore-patterns \fIPATTERN\fR...
-Regex patterns of file names to deny access to. Default: *.a *.o *.so *.bak
+Patterns of file names to deny access to. Default: *.a *.o *.so *.bak
+.br
+When generating
+.BR .htaccess ,
+entries from
+.B ~/.config/autoreadme/ignore_htaccess.txt
+are appended if that file exists.
 .SH ENVIRONMENT VARIABLES
 .TP
 .B MARKDOWN_CSS
@@ -73,6 +79,10 @@ Main documentation file containing the file table under "## Files ##" section.
 .TP
 .B ~/.config/autoreadme/ignore_list.txt
 User-specific ignore list file (overrides default ignore_list.txt).
+.TP
+.B ~/.config/autoreadme/ignore_htaccess.txt
+Optional user-specific deny patterns appended to generated
+.BR .htaccess .
 .TP
 .B ignore_list.txt
 Local ignore list file.
