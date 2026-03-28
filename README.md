@@ -547,29 +547,30 @@ Apache License 2.0 (standard practice for web server tools)
 
 ## Files ##
 
-| File                 | 🧿 | Description                                        |
-|----------------------|----|----------------------------------------------------|
-| autoreadme           | 🔩 | Unified command orchestrating the full pipeline    |
-| b4markdown           | 🔩 | Markdown preprocessor with syntax highlighting     |
-| bkup                 | 🔩 | Create versioned backups to .backups/ directory    |
-| checkreadme          | 🐍 | Validate README.md against actual directory        |
-| generate_files       | 🐍 | Create .htaccess, .contents, .info files           |
-| generate_html        | 🔩 | Convert README.md to .header.html and .readme.html |
-| generate_table       | 🐍 | Create file table with emojis from directory scan  |
-| help.txt             | 📃 | Help documentation for autoreadme command          |
-| hr                   | 🔩 | Generate decorative horizontal terminal rules      |
-| i2ico                | 🔩 | Convert images to ICO format files                 |
-| ignore_list.py       | 🐍 | Module to read ignore list from configuration      |
-| ignore_htaccess.txt  | 📃 | Sample .htaccess-only ignore pattern list          |
-| ignore_list.txt      | 📃 | Default list of files and directories to ignore    |
-| makefile             | 🚂 | Build and installation instructions                |
-| man                  | 📁 | Manual pages for all utilities                     |
-| markdown.css         | 🎨 | Example CSS for styling generated HTML             |
-| merge_table          | 🐍 | Merge Generated and README.md Table                |
-| mkimageindex         | 🔩 | Generate image thumbnail index for inclusion       |
-| qutopia              | 🔩 | Terminal art and philosophical wisdom display      |
-| recycle.jpg          | ♻️ | Folder icon for .backups directory                 |
-| txt2image            | 🐍 | Create thumbnails of text and image files          |
+| File                  | 🧿 | Description                                        |
+|-----------------------|----|----------------------------------------------------|
+| autoreadme            | 🔩 | Unified command orchestrating the full pipeline    |
+| b4markdown            | 🔩 | Markdown preprocessor with syntax highlighting     |
+| bkup                  | 🔩 | Create versioned backups to .backups/ directory    |
+| checkreadme           | 🐍 | Validate README.md against actual directory        |
+| generate_files        | 🐍 | Create .htaccess, .contents, .info files           |
+| generate_html         | 🔩 | Convert README.md to .header.html and .readme.html |
+| generate_table        | 🐍 | Create file table with emojis from directory scan  |
+| help.txt              | 📃 | Help documentation for autoreadme command          |
+| hr                    | 🔩 | Generate decorative horizontal terminal rules      |
+| i2ico                 | 🔩 | Convert images to ICO format files                 |
+| ignore_htaccess.txt   | 📃 | Sample .htaccess-only ignore pattern list          |
+| ignore_list.py        | 🐍 | Module to read ignore list from configuration      |
+| ignore_list.txt       | 📃 | Default list of files and directories to ignore    |
+| makefile              | 🚂 | Build and installation instructions                |
+| man                   | 📁 | Manual pages for all utilities                     |
+| markdown.css          | 🎨 | Example CSS for styling generated HTML             |
+| merge_table           | 🐍 | Merge Generated and README.md Table                |
+| mkimageindex          | 🔩 | Generate image thumbnail index for inclusion       |
+| qutopia               | 🔩 | Terminal art and philosophical wisdom display      |
+| recycle.jpg           | ♻️ | Folder icon for .backups directory                 |
+| txt2image             | 🐍 | Create thumbnails of text and image files          |
+| .github               | 📁 | Project Information                                |
 
 
 [//]: # vim: syntax=markdown ts=2 sw=2 sts=2 et

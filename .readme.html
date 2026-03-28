@@ -70,7 +70,7 @@ checkreadme (validates consistency)
 - <code>--no-htaccess</code> – Skip .htaccess generation
 - <code>--create_header</code> – Create full HTML document header
 - <code>--ignore FILE...</code> – Files to deny access to
-- <code>--ignore-patterns PATTERN...</code> – Regex patterns to deny</p>
+- <code>--ignore-patterns PATTERN...</code> – Patterns to deny; also used as the base list for <code>.htaccess</code></p>
 <hr />
 <h3><code>generate_table</code> 🧮</h3>
 <p><strong>File Scanner</strong> – Builds a Markdown table from the current directory.</p>
@@ -134,7 +134,7 @@ checkreadme (validates consistency)
 <p><strong>Options:</strong>
 - <code>--no-htaccess</code> – Skip .htaccess generation
 - <code>--ignore FILE...</code> – Files to deny access to
-- <code>--ignore-patterns PATTERN...</code> – Regex patterns to deny</p>
+- <code>--ignore-patterns PATTERN...</code> – Patterns to deny; <code>.htaccess</code> also appends matching entries from <code>~/.config/autoreadme/ignore_htaccess.txt</code></p>
 <hr />
 <h3><code>b4markdown</code> 🔄</h3>
 <p><strong>Markdown Preprocessor</strong> – Adds syntax highlighting before markdown_py conversion.</p>
@@ -303,6 +303,11 @@ hr --theme flowers                          # Flower emoji theme
 1. Environment variable: <code>IGNORE_LIST=path/to/file</code>
 2. User config: <code>~/.config/autoreadme/ignore_list.txt</code>
 3. Local fallback: <code>./ignore_list.txt</code></p>
+<p>Additional <code>.htaccess</code> deny patterns can be appended from:
+- <code>~/.config/autoreadme/ignore_htaccess.txt</code></p>
+<p>This file is optional, ignores blank lines and <code>#</code> comments, and only affects generated <code>.htaccess</code> files.
+Its patterns are only written when they match an existing top-level file or directory in the target path.
+The repository includes a sample <code>ignore_htaccess.txt</code> that install copies into <code>~/.config/autoreadme/</code> if you do not already have one.</p>
 <h3>Apache Directives</h3>
 <p>Embed Apache directives in README.md markdown comments:</p>
 <pre><code class="language-markdown">[.htaccess AddIcon &quot;/.icons/image.gif&quot; *.jpg ]: #
@@ -327,6 +332,7 @@ mv README.new README.md
 <h3>Generate Files with Custom Ignores</h3>
 <pre><code class="language-bash">autoreadme --ignore secret.txt private/ --ignore-patterns &quot;*.bak&quot;
 </code></pre>
+<p>For persistent extra <code>.htaccess</code> patterns, add one pattern per line to <code>~/.config/autoreadme/ignore_htaccess.txt</code>; unmatched entries are skipped until something exists.</p>
 <hr />
 <h2>📦 Dependencies</h2>
 <table>
