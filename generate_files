@@ -4,6 +4,7 @@ import os
 import html
 import argparse
 import re
+import fnmatch
 from pathlib import Path
 
 HTACCESS_IGNORE_FILE = Path.home() / ".config" / "autoreadme" / "ignore_htaccess.txt"
@@ -47,6 +48,24 @@ def load_ignore_patterns(ignore_file):
             if stripped and not stripped.startswith("#"):
                 patterns.append(stripped)
     return patterns
+
+def pattern_matches_existing_entry(base_path, pattern):
+    normalized = pattern.strip().lstrip("./")
+    if not normalized:
+        return False
+
+    has_glob = any(char in normalized for char in "*?[")
+    candidate = base_path / normalized.rstrip("/")
+    if not has_glob:
+        return candidate.exists()
+
+    if "/" in normalized:
+        return False
+
+    return any(fnmatch.fnmatch(entry.name, normalized) for entry in base_path.iterdir())
+
+def filter_existing_patterns(base_path, patterns):
+    return [pattern for pattern in patterns if pattern_matches_existing_entry(base_path, pattern)]
 
 def parse_table_entries(readme_path):
     entries = []
@@ -173,7 +192,8 @@ def main():
     args = parse_arguments()
     base_path = Path(args.directory)
     readme_path = base_path / "README.md"
-    htaccess_ignore_patterns = args.ignore_patterns + load_ignore_patterns(HTACCESS_IGNORE_FILE)
+    htaccess_config_patterns = filter_existing_patterns(base_path, load_ignore_patterns(HTACCESS_IGNORE_FILE))
+    htaccess_ignore_patterns = args.ignore_patterns + htaccess_config_patterns
 
     sorted_entries = get_sorted_entries(readme_path, args.ignore)
 

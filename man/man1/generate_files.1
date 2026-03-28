@@ -34,9 +34,11 @@ Patterns of file names to deny access to. Default: *.a *.o *.so *.bak
 .br
 When generating
 .BR .htaccess ,
-entries from
+matching entries from
 .B ~/.config/autoreadme/ignore_htaccess.txt
 are appended if that file exists.
+.br
+Matching is limited to existing top-level entries in the target directory.
 .SH FILES
 .TP
 .B README.md

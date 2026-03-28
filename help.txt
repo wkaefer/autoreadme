@@ -24,7 +24,8 @@ Options:
 
 Create ~/.config/autoreadme/ignore_list.txt for non-default ignore list.
 Create ~/.config/autoreadme/ignore_htaccess.txt to append extra
-                        .htaccess-only deny patterns.
+                        .htaccess-only deny patterns when they match
+                        existing top-level entries.
 
 Environment Variables:
 

@@ -197,7 +197,7 @@ generate_files [options]
 **Options:**
 - `--no-htaccess` – Skip .htaccess generation
 - `--ignore FILE...` – Files to deny access to
-- `--ignore-patterns PATTERN...` – Patterns to deny; `.htaccess` also appends `~/.config/autoreadme/ignore_htaccess.txt`
+- `--ignore-patterns PATTERN...` – Patterns to deny; `.htaccess` also appends matching entries from `~/.config/autoreadme/ignore_htaccess.txt`
 
 ---
 
@@ -348,6 +348,7 @@ Additional `.htaccess` deny patterns can be appended from:
 - `~/.config/autoreadme/ignore_htaccess.txt`
 
 This file is optional, ignores blank lines and `#` comments, and only affects generated `.htaccess` files.
+Its patterns are only written when they match an existing top-level file or directory in the target path.
 The repository includes a sample `ignore_htaccess.txt` that install copies into `~/.config/autoreadme/` if you do not already have one.
 
 ### Apache Directives
@@ -396,7 +397,7 @@ bkup *.py *.sh *.md
 autoreadme --ignore secret.txt private/ --ignore-patterns "*.bak"
 ```
 
-For persistent extra `.htaccess` patterns, add one pattern per line to `~/.config/autoreadme/ignore_htaccess.txt`.
+For persistent extra `.htaccess` patterns, add one pattern per line to `~/.config/autoreadme/ignore_htaccess.txt`; unmatched entries are skipped until something exists.
 
 ---
 
