@@ -4,7 +4,7 @@ MANPREFIX=${PREFIX}/share/man
 W=autoreadme
 
 .PHONY: install
-
+.ONESHELL:
 .DEFAULT:
 	@:
 
@@ -32,6 +32,19 @@ install: install-man
 	@cp -v txt2image "${PREFIX}/share/autoreadme/"
 	@cp -v ignore_list.py ignore_list.txt ignore_htaccess.txt "${PREFIX}/share/autoreadme/"
 	@mkdir -p "${HOME}/.config/qutopia"
+	@test -f "${HOME}/.config/autoreadme/README.md" || \
+	 cat <<-'EOF' > "${HOME}/.config/autoreadme/README.md"
+	 # AutoReadme #
+	 
+	 Autoreadme optional configuration
+	 
+	 ## Files ##
+	 
+	 | File                 | 🧿 | Description                                   |
+	 |----------------------|----|-----------------------------------------------|
+	 | ignore_list.txt      | 📃 | Default Ignore List installed from autoreadme |
+	 | ignore_htaccess.txt  | 📃 | Sample .htaccess-only ignore pattern list     |
+	 EOF
 	@test -f "${HOME}/.config/autoreadme/ignore_list.txt" || \
 	 cp -v ignore_list.txt "${HOME}/.config/autoreadme/"
 	@test -f "${HOME}/.config/autoreadme/ignore_htaccess.txt" || \
@@ -56,38 +69,5 @@ test_ignore:
 	rm -f ~/.config/autoreadme/ignore_list.txt
 	python ./ignore_list.py 
 	P=`pwd`;sh -c "cd /tmp && python $$P/ignore_list.py"
-
-
-#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
-#      ____ ___ _____      __   ____ ___ _____ _   _ _   _ ____  
-#     / ___|_ _|_   _|    / /  / ___|_ _|_   _| | | | | | | __ ) 
-#    | |  _ | |  | |     / /  | |  _ | |  | | | |_| | | | |  _ \ 
-#    | |_| || |  | |    / /   | |_| || |  | | |  _  | |_| | |_) |
-#     \____|___| |_|   /_/     \____|___| |_| |_| |_|\___/|____/ 
-#                                                                
-
-github:
-	git push github main
-	
-__reset::
-	rm -rf .git
-	git init
-	git remote add origin git@shazam:/srv/git/autoreadme
-	git remote add github https://www.github.com/${GITHUB_NAME}/autoreadme.git 
-	git remote set-url github git@github.com:${GITHUB_NAME}/autoreadme.git
-
-reset: __reset
-	git fetch 
-	git checkout origin/main -ft
-	git config pull.rebase false
-	git status
-
-__reset_git_repo__: __reset
-	ssh git@localhost rm -rf /srv/git/autoreadme.git
-	ssh git@localhost mkdir /srv/git/autoreadme.git
-	ssh git@localhost git -C /srv/git/autoreadme.git init --bare --initial-branch=main
-	git add .
-	git commit -m "Initial commit"
-	git push -u origin main
 
 # vim: set ft=make ts=8 sw=8 noet :

@@ -19,6 +19,7 @@ AddDescription "🔩 Unified command orchestrating the full pipeline" "autoreadm
 AddDescription "🔩 Markdown preprocessor with syntax highlighting" "b4markdown"
 AddDescription "Files git should ignore" ".gitignore"
 AddDescription "🛑 Access Denied" "Downloads"
+AddDescription "📃 Informational File" "README.md"
 AddDescription "🐍 Create thumbnails of text and image files" "txt2image"
 AddDescription "🏭 Directory of Different Machine Types" ".machines"
 AddDescription "Informational File" "README.md"
