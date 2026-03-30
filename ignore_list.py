@@ -9,7 +9,7 @@ LOCAL_IGNORE_LIST_FILE = os.path.join(SCRIPT_DIR, "ignore_list.txt")
 # Get the ignore list file path from the environment variable or set default paths
 IGNORE_LIST_FILE = os.environ.get(
     "IGNORE_LIST",
-    os.path.join(os.environ.get("HOME"), ".config", "autoreadme", "ignore_list.txt")
+    os.path.join(os.path.expanduser("~"), ".config", "autoreadme", "ignore_list.txt")
 )
 
 def load_ignore_list():
