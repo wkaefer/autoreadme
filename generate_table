@@ -231,10 +231,12 @@ def format_table(entries):
     rows = [header, divider]
 
     for name, desc in sorted(entries, key=lambda x: x[0].lower()):
+        # Strip trailing / for filesystem lookups
+        base = name.rstrip("/")
         # Use get_description if desc is empty
         if not desc:
-            desc = get_description(name)
-        emoji = center_emoji(pick_emoji(name))
+            desc = get_description(base)
+        emoji = center_emoji(pick_emoji(base))
         rows.append(f"| {name.ljust(name_col)} |{emoji}| {desc.ljust(desc_col)} |")
 
     return rows
@@ -245,7 +247,8 @@ def main():
         if item == os.path.basename(__file__):
             continue
         if not is_ignored(item):
-            entries.append((item, ""))
+            display_name = item + "/" if os.path.isdir(item) and not os.path.islink(item) else item
+            entries.append((display_name, ""))
     if not entries:
         print("Empty Directory")
         return

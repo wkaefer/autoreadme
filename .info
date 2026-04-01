@@ -55,14 +55,14 @@ makefile
 	"🚂 Build and installation instructions"
 help.txt
 	"📃 Help documentation for autoreadme command"
+.github/
+	"📁 Project Information"
 .machine
 	"⚙️ Symbolic Link to machines/xxx"
 ..netrc
 	"🛑 Access Denied"
 qutopia
 	"🔩 Terminal art and philosophical wisdom display"
-.github
-	"📁 Project Information"
 .netrc
 	"🛑 Access Denied"
 i2ico
@@ -75,7 +75,7 @@ i2ico
 	"🛑 Access Denied"
 bkup
 	"🔩 Create versioned backups to .backups/ directory"
-man
-	"📁 Manual pages for all utilities"
+man/
+	"📁 Man pages for the different compenents"
 hr
 	"🔩 Generate decorative horizontal terminal rules"

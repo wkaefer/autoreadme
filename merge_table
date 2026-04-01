@@ -20,7 +20,7 @@ def parse_table_lines(lines):
         match = re.match(r'^\|\s*(!?\S*)\s*\|\s*(\S*)\s*\|\s*((?:[^|\\]|\\.)+)\s*\|$', line)
         if match:
             name, emoji, desc = match.groups()
-            if name.lstrip("!") not in IGNORE_LIST:
+            if name.lstrip("!").rstrip("/") not in IGNORE_LIST:
                 entries[name] = (emoji.strip(), desc.strip())
     return entries
 
@@ -108,27 +108,32 @@ def main():
     stdin_entries = read_stdin_table()
     merged = {}
 
-    all_keys = set()
     readme_keys = set(readme_entries.keys())
     stdin_keys = set(stdin_entries.keys())
 
-    # Normalize readme keys for comparison
-    normalized_readme = {k.lstrip("!"): k for k in readme_keys}
+    # Normalize keys: strip ! prefix and trailing / for comparison
+    normalized_readme = {k.lstrip("!").rstrip("/"): k for k in readme_keys}
+    normalized_stdin = {k.rstrip("/"): k for k in stdin_keys}
 
     # First, keep everything from README (with ! prefix if present)
     for rkey in readme_keys:
-        norm_key = rkey.lstrip("!")
+        norm_key = rkey.lstrip("!").rstrip("/")
         if norm_key in IGNORE_LIST:
             continue
-        emoji, _ = stdin_entries.get(norm_key, ("  ", ""))
+        # Look up in stdin using normalized key
+        skey = normalized_stdin.get(norm_key)
+        emoji, _ = stdin_entries.get(skey, ("  ", "")) if skey else ("  ", "")
         desc = readme_entries[rkey][1]
         if readme_entries[rkey][0]:
             emoji = readme_entries[rkey][0]
-        merged[rkey] = (emoji, desc)
+        # Use stdin key format (with /) if available and entry isn't marked removed
+        output_key = skey if skey and not rkey.startswith("!") else rkey
+        merged[output_key] = (emoji, desc)
 
     # Then add remaining stdin entries not already in README
     for skey in stdin_keys:
-        if skey in normalized_readme or skey in IGNORE_LIST:
+        norm_skey = skey.rstrip("/")
+        if norm_skey in normalized_readme or norm_skey in IGNORE_LIST:
             continue
         emoji, desc = stdin_entries[skey]
         merged[skey] = (emoji, desc)

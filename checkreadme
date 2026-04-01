@@ -30,13 +30,17 @@ def is_git_ignored(path):
         return False
 
 def list_directory_files():
-    return sorted([
-        f for f in os.listdir(".")
-        #f os.path.isfile(f)
-        if os.path.exists(f)
-        and f not in IGNORE_LIST
-        and not is_git_ignored(f)
-    ])
+    result = []
+    for f in sorted(os.listdir(".")):
+        if not os.path.exists(f):
+            continue
+        if f in IGNORE_LIST:
+            continue
+        if is_git_ignored(f):
+            continue
+        display_name = f + "/" if os.path.isdir(f) and not os.path.islink(f) else f
+        result.append(display_name)
+    return result
 
 def is_blank(text):
     return not unicodedata.normalize("NFKC", text).strip()
@@ -86,19 +90,27 @@ def validate_readme():
     files = list_directory_files()
     errors = []
 
-    for f in files:
-        verbose(" Checking File "+f)
-        if f not in entries:
-            errors.append(f"⚠️  File '{f}' exists but is not listed in README.md")
-        elif is_blank(entries[f]):
-            errors.append(f"⚠️  File '{f}' listed in README.md but has empty description")
+    # Normalize: strip trailing / for comparison
+    norm_entries = {k.rstrip("/"): k for k in entries}
 
+    for f in files:
+        nf = f.rstrip("/")
+        verbose(" Checking File "+f)
+        if nf not in norm_entries:
+            errors.append(f"⚠️  File '{f}' exists but is not listed in README.md")
+        else:
+            entry_key = norm_entries[nf]
+            if is_blank(entries[entry_key]):
+                errors.append(f"⚠️  File '{f}' listed in README.md but has empty description")
+
+    norm_files = set(f.rstrip("/") for f in files)
     for name in entries:
         if name.startswith("!"):
             continue
+        nn = name.rstrip("/")
         # Report if not reported above
-        if name not in files:
-            normalized = name.lstrip("*")
+        if nn not in norm_files:
+            normalized = name.lstrip("*").rstrip("/")
             verbose(" Checking Entry "+normalized)
             if not os.path.exists(normalized) and not is_git_ignored(normalized):
                 errors.append(f"❌ File '{name}' listed in README.md but not found")

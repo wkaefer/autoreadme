@@ -563,14 +563,14 @@ Apache License 2.0 (standard practice for web server tools)
 | ignore_list.py        | 🐍 | Module to read ignore list from configuration      |
 | ignore_list.txt       | 📃 | Default list of files and directories to ignore    |
 | makefile              | 🚂 | Build and installation instructions                |
-| man                   | 📁 | Manual pages for all utilities                     |
+| man/                  | 📁 | Man pages for the different compenents             |
 | markdown.css          | 🎨 | Example CSS for styling generated HTML             |
 | merge_table           | 🐍 | Merge Generated and README.md Table                |
 | mkimageindex          | 🔩 | Generate image thumbnail index for inclusion       |
 | qutopia               | 🔩 | Terminal art and philosophical wisdom display      |
 | recycle.jpg           | ♻️ | Folder icon for .backups directory                 |
 | txt2image             | 🐍 | Create thumbnails of text and image files          |
-| .github               | 📁 | Project Information                                |
+| .github/              | 📁 | Project Information                                |
 
 
 [//]: # vim: syntax=markdown ts=2 sw=2 sts=2 et
