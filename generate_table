@@ -223,11 +223,10 @@ def display_width(s):
     """Display width of a string, accounting for wide/emoji characters."""
     w = 0
     for ch in s:
-        eaw = unicodedata.east_asian_width(ch)
-        if eaw in ('W', 'F'):
+        if unicodedata.east_asian_width(ch) in ('W', 'F') or ord(ch) >= 0x1F000:
             w += 2
-        elif unicodedata.category(ch) in ('Mn', 'Me', 'Cf'):
-            pass
+        elif unicodedata.category(ch)[0] in ('M', 'C'):
+            continue
         else:
             w += 1
     return w
@@ -245,7 +244,7 @@ def format_table(entries):
     desc_col = max(72 - total_width - 4, 20)  # padding and pipes
     total_width = name_col + emoji_col + desc_col + 6  # final check
 
-    header = f"| {'File'.ljust(name_col)} | 🧿 | {'Description'.ljust(desc_col)} |"
+    header = f"| {ljust_wide('File', name_col)} | 🧿 | {ljust_wide('Description', desc_col)} |"
     divider = f"|{'-' * (name_col + 2)}|{'-' * emoji_col}|{'-' * (desc_col + 2)}|"
     rows = [header, divider]
 
