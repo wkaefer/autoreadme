@@ -4,6 +4,7 @@ import os
 import mimetypes
 import subprocess
 import sys
+import unicodedata
 
 # XDG_UTILS_DEBUG_LEVEL=99999
 
@@ -218,8 +219,26 @@ def center_emoji(emoji, width=3):
     padding_right = total_padding - padding_left
     return f"{' ' * padding_left}{placeholder}{' ' * padding_right}".replace(placeholder, emoji)
 
+def display_width(s):
+    """Display width of a string, accounting for wide/emoji characters."""
+    w = 0
+    for ch in s:
+        eaw = unicodedata.east_asian_width(ch)
+        if eaw in ('W', 'F'):
+            w += 2
+        elif unicodedata.category(ch) in ('Mn', 'Me', 'Cf'):
+            pass
+        else:
+            w += 1
+    return w
+
+def ljust_wide(s, width):
+    """Left-justify string to target display width."""
+    pad = width - display_width(s)
+    return s + ' ' * max(pad, 0)
+
 def format_table(entries):
-    max_name_len = max(len(name) for name, _ in entries) + 2
+    max_name_len = max(display_width(name) for name, _ in entries) + 2
     name_col = max(max_name_len, 20)
     emoji_col = 4
     total_width = name_col + emoji_col + 3 + 1 + 1  # separators and spaces
@@ -237,7 +256,7 @@ def format_table(entries):
         if not desc:
             desc = get_description(base)
         emoji = center_emoji(pick_emoji(base))
-        rows.append(f"| {name.ljust(name_col)} |{emoji}| {desc.ljust(desc_col)} |")
+        rows.append(f"| {ljust_wide(name, name_col)} |{emoji}| {ljust_wide(desc, desc_col)} |")
 
     return rows
 

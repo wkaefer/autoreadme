@@ -2,6 +2,7 @@
 
 import sys
 import re
+import unicodedata
 
 # Files to ignore in the merged output
 IGNORE_LIST = {
@@ -67,6 +68,24 @@ def natural_sort_key(name):
     parts = [int(p) if p.isdigit() else p for p in parts]
     return (hidden, parts)
 
+def display_width(s):
+    """Display width of a string, accounting for wide/emoji characters."""
+    w = 0
+    for ch in s:
+        eaw = unicodedata.east_asian_width(ch)
+        if eaw in ('W', 'F'):
+            w += 2
+        elif unicodedata.category(ch) in ('Mn', 'Me', 'Cf'):
+            pass
+        else:
+            w += 1
+    return w
+
+def ljust_wide(s, width):
+    """Left-justify string to target display width."""
+    pad = width - display_width(s)
+    return s + ' ' * max(pad, 0)
+
 def format_table(merged):
     #filenames = sorted(
     #    merged.keys(),
@@ -75,8 +94,8 @@ def format_table(merged):
 
     filenames = sorted(merged.keys(), key=natural_sort_key)
 
-    max_name_len = max(len(name) for name in filenames) + 2
-    max_desc_len = max(len(desc) for _, desc in merged.values())
+    max_name_len = max(display_width(name) for name in filenames) + 2
+    max_desc_len = max(display_width(desc) for _, desc in merged.values())
     emoji_col = 4
 
     name_col = max(max_name_len, 20)
@@ -96,10 +115,10 @@ def format_table(merged):
         emoji, desc = merged[name]
         emoji_cell = f" {emoji} " if emoji else "   "
         if name.startswith("!"):
-            name_cell = f"|{name.ljust(name_col + 1)}"
+            name_cell = f"|{ljust_wide(name, name_col + 1)}"
         else:
-            name_cell = f"| {name.ljust(name_col)}"
-        rows.append(f"{name_cell} |{emoji_cell}| {desc.ljust(desc_col)} |")
+            name_cell = f"| {ljust_wide(name, name_col)}"
+        rows.append(f"{name_cell} |{emoji_cell}| {ljust_wide(desc, desc_col)} |")
 
     return rows
 
