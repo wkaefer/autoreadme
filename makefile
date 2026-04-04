@@ -50,6 +50,7 @@ install: install-man
 	@test -f "${HOME}/.config/autoreadme/ignore_htaccess.txt" || \
 	 cp -v ignore_htaccess.txt "${HOME}/.config/autoreadme/"
 	@ln -svnf ../share/autoreadme/autoreadme ${PREFIX}/bin/autoreadme
+	@ln -svnf ../share/autoreadme/checkreadme ${PREFIX}/bin/checkreadme
 
 clean:
 	@rm -rf __pycache__
