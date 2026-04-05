@@ -116,7 +116,7 @@ def get_sorted_entries(readme_path, deny_files):
     # Add Deny
     for deny in deny_files:
         entries.append((deny, "🛑 Access Denied"))
-    return sorted([(len(k), v, k) for k, v in entries], reverse=True)
+    return sorted([(len(k), v, k.rstrip("/")) for k, v in entries], reverse=True)
 
 def write_deny_blocks(f, deny_files, deny_patterns):
     for fname in deny_files:
