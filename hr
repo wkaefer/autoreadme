@@ -1,0 +1,319 @@
+#!/bin/bash
+# --- Defaults ---
+char_mode=ascii
+emojis=""
+toggle_fg=false
+toggle_bg=false
+use_bg=true
+use_fg=true
+output_str=""
+line_multiplier=1
+text=""
+emoji_pad=0
+fg=33
+bg=42
+istty=false
+
+# --- Help Function ---
+show_help() {
+    cat << EOF
+Usage: $0 [options]
+
+Options:
+  -e, --emoji      Emoji sequence (comma-separated). Default: 🌀
+  -c, --color      Enable random ANSI foreground colors
+  -z, --back       Enable random ANSI background colors
+  -f, --fg         Enable foreground color
+  -b, --bg         Enable background color
+  -n, --no_color   Disable all Color
+  -m, --mode       Character mode: ascii (default), emoji, box, card
+  -l, --lines      Number of horizontal rule lines to draw
+
+  --list-themes    Display all available theme names
+  -T, --theme      Use a named emoji theme (overrides -e)
+                   Options:
+                     mythical, flowers, succulents, veggies, fruits, trees,
+                     random (picks any theme at runtime),
+                     cosmic, birds, catsdogs, food
+  --tty            Terminal is a tty, even if it tests as not.
+  -t               Run sample test
+  -h, --help       Show this help message
+
+Examples:
+  $0 -e "🌈,🌊,✨" -c -b
+  $0 -m box -l 2
+  $0 -m card --color
+
+Example Emoji Sequences:
+  Mythical:    -e "🧜‍♀️,🧝‍♂️,🧚,🧞‍♂️,🧛‍♀️,🧙‍♀️"
+  Flowers:     -e "🌸,🌼,🌹,🌷,💐,🌺"
+  Succulents:  -e "🌵,🪴,🌱,🌿,🍀,🪻"
+  Veggies:     -e "🥕,🌽,🥬,🧄,🧅,🥒,🥦"
+  Fruits:      -e "🍓,🍉,🍌,🍍,🍒,🍇,🍑"
+  Trees:       -e "🌳,🌲,🌴,🪵,🍃,🍂"
+  Cosmic:      -e "🌌,🌠,⭐,✨,🔮,🪐"
+
+Environment Variable Support:
+  HR=eb  🟦   HR=eg  🟩  
+  HR=er  🟥   HR=ey  🟨  
+  HR=et  🚂   HR=ee  👀 
+  HR=C HR=M HR=B HR=R HR=Y HR=G
+
+Note: Command-line arguments take precedence over the HR variable.
+EOF
+    exit 0
+}
+
+# --- Get terminal width ---
+if [ -t 1 ] ; then
+    term_width=$(tput cols)
+else
+    term_width=80
+fi
+
+fgcolors=(31 32 33 34 35 36 37 38)
+bgcolors=(41 42 43 44 45 46 47 48)
+
+# --- Theme shortcuts ---
+declare -A THEMES=(
+    [mythical]="🧜‍♀️,🧝‍♂️,🧚,🧞‍♂️,🧛‍♀️,🧙‍♀️"
+    [flowers]="🌸,🌼,🌹,🌷,💐,🌺"
+    [succulents]="🌵,🪴,🌱,🌿,🍀,🪻"
+    [veggies]="🥕,🌽,🥬,🧄,🧅,🥒,🥦,🍅,🍆"
+    [fruits]="🍓,🍉,🍌,🍍,🍒,🍇,🍑"
+    [trees]="🌳,🌲,🌴,🪵,🍃,🍂"
+    [cosmic]="🌌,🌠,⭐,✨,🔮,🪐"
+    [birds]="🦉,🦅,🕊️,🦜,🐦,🦢,🐧"
+    [catsdogs]="🐱,🐶,🐾,😺,😸,😻"
+    [food]="🍕,🍔,🌮,🍣,🍩,🍪"
+    [weather]="☀,⛅,❄"
+    [hearts]="❤,💕,💖"
+    [tools]="🔧,🔨"
+    [faces]="😀,😮,😜"
+)
+
+function no_color
+{
+	use_fg=false
+	use_bg=false
+	toggle_fg=false
+	toggle_bg=false
+}
+
+# --- Abbreviation-aware flag parsing ---
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+	-e|--emoji) char_mode="emoji";no_color;emojis="${2:-🌀}"; shift ;;
+        -c|--color) toggle_fg=true;use_fg=true;;
+        -z|--back) toggle_bg=true;use_bg=true;;
+        -f|--fg) use_fg=true;;
+        -b|--bg) use_bg=true;;
+        -m|--mode) char_mode="${2:-ascii}";no_color;shift;;
+        -l|--lines) line_multiplier="${2:-1}"; shift ;;
+
+	-n|--nocolor) no_color ;;
+
+        --list-themes)
+            echo "Available themes:"
+            for key in "${!THEMES[@]}"; do
+                echo "  $key: ${THEMES[$key]}"
+            done
+            exit 0
+            ;;
+
+        -T|--theme)
+
+	    char_mode=emoji
+	    no_color
+        typeset -l _theme_="$2"
+            if [[ "$_theme_" == "random" ]]; then
+                keys=("${!THEMES[@]}")
+                rand_index=$((RANDOM % ${#keys[@]}))
+                chosen="${keys[$rand_index]}"
+                emojis="${THEMES[$chosen]}"
+            elif [[ -n "${THEMES[$_theme_]}" ]]; then
+                emojis="${THEMES[$_theme_]}"
+            else
+                echo "Unknown theme: $2"
+                exit 1
+            fi
+
+            shift ;;
+
+    --tty)    istty=true;;
+	-t)	# ToDo: Change to add Command as Text, maybe an option
+		hr 
+		hr -e
+		HR=C ./hr
+		HR=C ./hr Hello
+		HR=M ./hr
+		HR=G ./hr
+		HR=B ./hr
+		HR=R ./hr
+		HR=Y ./hr
+		HR=et ./hr 
+		HR=et ./hr  -l 2
+		hr -e "🌈,🌊,✨" -c 
+		hr -e "🌈,🌊,✨" -c this is a test
+		hr -e "🌈,🌊,✨" -c -z
+		hr -m box -l 2
+		hr -m box -l 2 -c 
+		hr -m box -l 2 -c -b
+		hr -m card --color
+		hr --theme flowers -l 1
+		hr --theme flowers -l 2 -z
+		hr --theme flowers -l 1 -b
+		hr --theme mythical
+		hr --theme flowers
+		hr --theme succulents
+		hr --theme veggies
+		hr --theme fruits
+		hr --theme trees
+		hr --theme cosmic
+		HR=eg hr
+		exit 0
+		;;
+
+        -h|--help) show_help ;;
+
+	*) text=" $@";break;;
+	
+    esac
+    shift
+done
+text=$(echo "$text" | sed 's/[[:space:]]*$//')
+
+# --- HR environment variable fallback AFTER CLI parsing ---
+if [[ "$emojis" == "" && -n "$HR" ]]; then
+    case "$HR" in
+        eb) char_mode=emoji;no_color;emojis="🟦" ;;
+        eg) char_mode=emoji;no_color;emojis="🟩" ;;
+        ee) char_mode=emoji;no_color;emojis="👀" ;;
+        er) char_mode=emoji;no_color;emojis="🟥" ;;
+        et) char_mode=emoji;no_color;emojis="🚂" ;;
+        ey) char_mode=emoji;no_color;emojis="🟨" ;;
+	C)	fg=33;bg=46;;
+        M|P)	fg=33;bg=45;;
+	B)	fg=33;bg=44;;
+	Y)	fg=33;bg=43;;
+	R)	fg=33;bg=41;;
+	*)	fg=33;bg=42;;
+    esac
+fi
+
+# --- Define character sets ---
+IFS=',' read -ra EMOJI_ARR <<< "$emojis"
+BOX_CHARS=( "─" "━" "│" "┃" "┄" "┅" "┆" "┇" "┈" "┉" "┊" "┋" "╴" "╵" "╶" "╷" )
+CARD_CHARS=( 🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪 🂫 🂭 🂮 🃁 🃂 🃃 🃄 🃅 🃆 🃇 🃈 🃉 🃊 🃋 🃍 🃎 )
+
+get_random_char() {
+    # Default pattern alternates between / and \ if using emoji mode and default emoji
+    if [[ "$char_mode" == "ascii" && "$emojis" == "" ]]; then
+        if (( i % 2 == 0 )); then
+            echo "/"
+        else
+            echo "\\\\"
+        fi
+        return
+    fi
+
+    case "$char_mode" in
+        box)
+            (( ${#BOX_CHARS[@]} == 0 )) && echo -n "#" || echo -n "${BOX_CHARS[$RANDOM % ${#BOX_CHARS[@]}]}"
+            ;;
+        card)
+            (( ${#CARD_CHARS[@]} == 0 )) && echo -n "#" || echo -n "${CARD_CHARS[$RANDOM % ${#CARD_CHARS[@]}]}"
+            ;;
+        emoji|*)
+            (( ${#EMOJI_ARR[@]} == 0 )) && echo -n "#" || echo -n "${EMOJI_ARR[$RANDOM % ${#EMOJI_ARR[@]}]}"
+            ;;
+    esac
+}
+
+
+# --- Adjust ANSI logic if not a TTY ---
+if ! $istty ; then
+    if [[ ! -t 1 ]]; then
+        toggle_fg=false
+        toggle_bg=false
+        use_bg=false
+        use_fg=false
+    fi
+fi
+
+
+# Adjust terminal width for emoji spacing
+text_width=${#text}
+(( full_term_width=term_width ))
+(( partial_term_width = term_width - text_width ))
+case "$char_mode" in
+	emoji)	(( full_term_width = ( term_width + 1 ) / 2 )) 
+		(( partial_term_width = ( term_width + 1 - text_width ) / 2 ))
+		(( emoji_pad = ( term_width + 1 - text_width ) % 2 ))
+		(( emoji_pad_full = ( term_width + 1 ) % 2 ))
+		;;
+	box)	(( full_term_width = full_term_width -1 ))
+		(( partial_term_width = partial_term_width - 1 ))
+		;;
+	cards)	(( full_term_width = full_term_width -1 ))
+		(( partial_term_width = partial_term_width - 1 ))
+		;;
+	*)	(( partial_term_width = partial_term_width - 1 ))
+		;;
+esac
+#echo cm=$char_mode term_width=$term_width text_width=$text_width ftw=$full_term_width ptw=$partial_term_width
+
+# --- Generate bordered rule ---
+if [ $line_multiplier -gt 1 ] ; then
+(( almost_the_last_line=line_multiplier-1 ))
+for ((line=0; line<almost_the_last_line; line++)); do
+    output_str+="#"
+    for ((i=1; i<full_term_width-1; i++)); do
+        char=$(get_random_char)
+        if $toggle_fg; then
+            fg=${fgcolors[$(( RANDOM % ${#fgcolors[@]} ))]}
+	fi
+	if $toggle_bg; then
+            bg=${bgcolors[$(( RANDOM % ${#bgcolors[@]} ))]}
+	fi
+
+        if $use_bg; then
+	    if $use_fg; then
+		output_str+="\e[1;${fg};${bg}m$char\e[0m"
+            else
+                output_str+="\e[1;${bg}m$char\e[0m"
+            fi
+	elif $use_fg; then
+            output_str+="\e[1;${fg}m$char\e[0m"
+        else
+            output_str+="$char"
+        fi
+    done
+    output_str+=" $(printf '%*s' $emoji_pad_full '')#\n"
+done
+fi
+
+output_str+="#"
+for ((i=1; i<partial_term_width-1; i++)); do
+    char=$(get_random_char)
+    if $toggle_fg; then
+        fg=${fgcolors[$(( RANDOM % ${#fgcolors[@]} ))]}
+	fi
+	if $toggle_bg; then
+        bg=${bgcolors[$(( RANDOM % ${#bgcolors[@]} ))]}
+	fi
+
+    if $use_bg; then
+	if $use_fg; then
+		output_str+="\e[1;${fg};${bg}m$char\e[0m"
+        else
+            output_str+="\e[1;${bg}m$char\e[0m"
+        fi
+	elif $use_fg; then
+        output_str+="\e[1;${fg}m$char\e[0m"
+    else
+        output_str+="$char"
+    fi
+done
+output_str+="$text $(printf '%*s' $emoji_pad '')#\n"
+echo -ne "$output_str"

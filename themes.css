@@ -1,0 +1,134 @@
+/* themes.css - Theme support for autoreadme-generated Apache files
+ * Precedence: /.themes.css (dotfile) > /themes.css
+ * Uses CSS variables for light/dark themes. Mirrors markdown.css structure.
+ *
+ * Light theme: original markdown.css colors (the curated defaults)
+ * Dark theme: inverted for readability on dark backgrounds
+ */
+
+:root {
+  /* Body */
+  --bg-color: #F5FFFA;           /* Mint Green */
+  --text-color: black;
+  /* Headings */
+  --heading1-color: green;
+  --heading2-color: orange;
+  --heading3-color: royalblue;
+  --heading5-color: red;
+  --heading6-color: forestgreen;
+  /* Links */
+  --link-color: blue;
+  --link-hover-bg: #7DBA00;
+  --link-hover-color: yellow;
+  /* Tables */
+  --table-border: #009879;
+  --table-header-bg: #BEDC7F;
+  /* Tree panel */
+  --tree-bg: #e5f1cc;
+  --tree-border: #009879;
+  --tree-link-color: #006644;
+  --tree-link-hover: #009879;
+  /* List hover */
+  --li-hover-bg: #E4EEF8;
+  /* Admonition */
+  --admonition-border: #4CAF50;
+  --admonition-bg: #f9f9f9;
+  --admonition-title: #4CAF50;
+  /* Mark highlights (b4markdown) */
+  --mark-gray: #c5beb7;
+  --mark-cyan: #0fffff;
+  --mark-green: #bedc7f;
+  --mark-blue: #bcd5ee;
+  --mark-purple: #dda0dd;
+  --mark-yellow: #f3d788;
+  --mark-red: #eca77f;
+  --mark-orange: #ff9900;
+}
+
+[data-theme="dark"] {
+  /* Body */
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  /* Headings */
+  --heading1-color: #66cc66;
+  --heading2-color: #ffaa33;
+  --heading3-color: #66aaff;
+  --heading5-color: #ff6666;
+  --heading6-color: #55bb55;
+  /* Links */
+  --link-color: #66ccff;
+  --link-hover-bg: #336699;
+  --link-hover-color: #ffff66;
+  /* Tables */
+  --table-border: #00aa77;
+  --table-header-bg: #2a7a4a;
+  /* Tree panel */
+  --tree-bg: #0f2a1a;
+  --tree-border: #00aa77;
+  --tree-link-color: #44bb88;
+  --tree-link-hover: #66ddaa;
+  /* List hover */
+  --li-hover-bg: #2a3a4a;
+  /* Admonition */
+  --admonition-border: #338833;
+  --admonition-bg: #2a2a2a;
+  --admonition-title: #55bb55;
+  /* Mark highlights (b4markdown) */
+  --mark-gray: #555555;
+  --mark-cyan: #00cccc;
+  --mark-green: #2a7a4a;
+  --mark-blue: #336699;
+  --mark-purple: #9966cc;
+  --mark-yellow: #ccaa33;
+  --mark-red: #aa5544;
+  --mark-orange: #ff8800;
+}
+
+/* Settings gear - collapsible upper-right panel with random icon (🌸⚙🎨🌵 etc) */
+#settings-gear {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 10000;
+  user-select: none;
+}
+.gear-icon {
+  display: block;
+  font-size: 1.4em;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  text-align: right;
+}
+#settings-gear:hover .gear-icon,
+#settings-gear.show .gear-icon { opacity: 1.0; }
+.settings-panel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  background: var(--bg-color);
+  border: 2px solid var(--table-border);
+  border-radius: 6px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin-top: 4px;
+}
+#settings-gear:hover .settings-panel,
+#settings-gear.show .settings-panel {
+  max-height: 200px;
+  opacity: 1;
+  padding: 6px 10px;
+}
+.settings-panel label {
+  color: var(--text-color);
+  font-weight: bold;
+  margin-right: 6px;
+}
+.settings-panel select {
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--table-border);
+  padding: 2px 4px;
+  border-radius: 3px;
+}

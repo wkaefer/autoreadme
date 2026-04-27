@@ -1,0 +1,67 @@
+#!/bin/python
+from PIL import Image, ImageDraw, ImageFont
+import sys
+import os
+
+def text_to_image(filename, start_line=0, num_lines=None):
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+
+    total_lines = len(lines)
+    if start_line < 0 or start_line >= total_lines:
+        print(f"start_line {start_line} is out of bounds.")
+        return
+
+    end_line = start_line + num_lines if num_lines else total_lines
+    selected_lines = lines[start_line:end_line]
+
+    # Dynamically calculate columns as the max line width (in characters)
+    columns = max((len(line.rstrip('\n')) for line in selected_lines), default=0)
+
+    # Try to use a monospaced font, warn if not found
+    try:
+        font = ImageFont.truetype("DejaVuSansMono.ttf", 14)
+        mono_font_loaded = True
+    except IOError:
+        font = ImageFont.load_default()
+        mono_font_loaded = False
+
+    if not mono_font_loaded:
+        print("Warning: Could not load monospaced font 'DejaVuSansMono.ttf'. Using default font (may not be monospace).")
+
+    # Use getbbox to get char dimensions
+    bbox = font.getbbox("A")
+    char_width = bbox[2] - bbox[0]
+    char_height = bbox[3] - bbox[1]
+    padding = 10  # Symmetrical padding
+
+    img_width = padding * 2 + char_width * columns
+    img_height = padding * 2 + char_height * len(selected_lines)
+
+    img = Image.new('RGB', (img_width, img_height), color='white')
+    draw = ImageDraw.Draw(img)
+
+    y = padding
+    for line in selected_lines:
+        draw.text((padding, y), line.rstrip('\n'), fill='black', font=font)
+        y += char_height
+
+    base, ext = os.path.splitext(filename)
+    output_path = f"{base}_thumbnail.png"
+    img.save(output_path)
+    print(f"Saved: {output_path}")
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: text2image filename [start_line] [num_lines]")
+        sys.exit(1)
+
+    filename = sys.argv[1]
+    start_line = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    num_lines = int(sys.argv[3]) if len(sys.argv) > 3 else None
+
+    text_to_image(filename, start_line, num_lines)
+
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,261 @@
+#!/usr/bin/env ksh93
+
+# 🛠️ Script: generate_html
+# 📄 Purpose: Process README.md to create:
+#   - .header.html: Contains only the top-level header (first '# Header' section)
+
+# Ensure sibling scripts (b4markdown, etc.) are in PATH
+PATH="${0%/*}:$PATH"
+#   - .readme.html: Full README content excluding the '## Files' section.
+#   All content is processed through `b4markdown`.
+
+readonly README="README.md"
+readonly HEADER_OUT=".header.html"
+readonly README_OUT=".readme.html"
+
+export LC_ALL=C
+
+MARKDOWN="${MARDKDOWN:-b4markdown}"
+
+if [[ ! -f $README ]]; then
+    print -u2 "❌ Error: $README not found. Cannot proceed."
+    exit 1
+fi
+
+if ! command -v $MARKDOWN >/dev/null 2>&1; then
+    print -u2 "❌ Error: $MARKDOWN not found in PATH."
+    print -u2 "📦 Please install it before running this script."
+    print -u2 "⚙️  Alternatively, set MARKDOWN=<your markdown2html> filter>"
+    exit 1
+fi
+
+create_header=false
+print -u2 "🌵 ${0##*/} $@"
+for p 
+do
+    case "$p" in
+        --create-header|--create_header)
+            create_header=true
+            print -u2 "🌻 creating complete html header"
+            ;;
+    esac
+done
+
+MARKDOWN_CSS="${MARKDOWN_CSS:-/.markdown.css}"
+THEMES_CSS="${THEMES_CSS:-/.themes.css}"
+SETTINGS_ICON="${SETTINGS_ICON:-random}"
+
+# ✂️ Extract header section and strip leading/trailing spaces and '#' chars
+d=`pwd`
+dirname=`basename $d`
+
+# 🌳 Capture directory tree snapshot at generation time, with navigable links
+# 🔧 Only add --gitignore if tree supports it (v1.8.0+) AND we're in a git repo
+tree_opts="-d -L 3 --noreport --charset utf8 -I __pycache__"
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1 &&
+   tree --gitignore /dev/null >/dev/null 2>&1; then
+    tree_opts="$tree_opts --gitignore"
+fi
+tree_normal=$(tree $tree_opts 2>/dev/null || print ".")
+tree_paths=$(tree -f $tree_opts 2>/dev/null || print ".")
+
+# 🔗 Merge normal + full-path trees to wrap directory names in <a href> links
+# 🪭 Each line is wrapped in <span class="tree-dir" data-depth="N"> for subtree folding
+tree_output=$(paste <(print -- "$tree_normal") <(print -- "$tree_paths") | awk -F'\t' '
+{
+    normal_line = $1
+    path_line   = $2
+
+    # Unescape backslash-spaces from tree output (e.g. "Network\ Cost")
+    gsub(/\\ /, " ", normal_line)
+
+    # Extract relative path from the -f version (skip leading ./)
+    match(path_line, /\.\//)
+    if (RSTART > 0) {
+        fullpath = substr(path_line, RSTART + 2)
+    } else {
+        # Root line (depth 0)
+        printf "<span class=\"tree-dir\" data-depth=\"0\">%s</span>\n", normal_line
+        next
+    }
+
+    # Strip symlink target from path (e.g. "fm/config -> ../config/fmconfig")
+    symlink = ""
+    arrow = index(fullpath, " -> ")
+    if (arrow > 0) {
+        symlink = substr(fullpath, arrow)
+        fullpath = substr(fullpath, 1, arrow - 1)
+    }
+
+    # Unescape backslash-spaces from tree -f paths
+    gsub(/\\ /, " ", fullpath)
+
+    # Compute depth from path (count "/" separators + 1)
+    depth = 1
+    for (i = 1; i <= length(fullpath); i++) {
+        if (substr(fullpath, i, 1) == "/") depth++
+    }
+
+    # Get the display name (last path component)
+    n = split(fullpath, parts, "/")
+    dname = parts[n]
+
+    # Wrap the directory name in the normal line with a link
+    idx = index(normal_line, dname)
+    if (idx > 0) {
+        prefix = substr(normal_line, 1, idx - 1)
+        printf "<span class=\"tree-dir\" data-depth=\"%d\">%s<a href=\x27%s/\x27>%s</a>%s</span>\n", depth, prefix, fullpath, dname, symlink
+    } else {
+        printf "<span class=\"tree-dir\" data-depth=\"%d\">%s</span>\n", depth, normal_line
+    }
+}' | awk '
+# 🪭 Second pass: mark nodes that have children with data-has-children
+{
+    lines[NR] = $0
+    # Extract depth: find data-depth="N", grab the number
+    tmp = $0
+    sub(/.*data-depth="/, "", tmp)
+    sub(/".*/, "", tmp)
+    depths[NR] = tmp + 0
+}
+END {
+    for (i = 1; i <= NR; i++) {
+        has_children = 0
+        if (i < NR && depths[i+1] > depths[i]) has_children = 1
+        if (has_children) {
+            sub(/data-depth=/, "data-has-children data-depth=", lines[i])
+        }
+        print lines[i]
+    }
+}')
+
+awk -vf="$HEADER_OUT" -vcreate_header=$create_header -vmarkdowncss="$MARKDOWN_CSS" -vthemecss="$THEMES_CSS" -vsettingsicon="$SETTINGS_ICON" -vdirname="$dirname" -vtree="$tree_output" '
+    BEGIN { in_header = 1
+        if ( create_header == "true" ) {
+            print("<!DOCTYPE html>");
+            print("<html lang=\x27en\x27>")
+            print("<head>");
+            print(" <meta charset=\x27utf-8\x27>")
+            print(" <title>" dirname "</title>")
+            print(" <link rel=\x27stylesheet\x27 href=\x27" markdowncss "\x27 type=\x27text/css\x27>")
+            print(" <link rel=\x27stylesheet\x27 href=\x27" themecss "\x27 type=\x27text/css\x27>")
+            print(" </head>")
+            print(" <body>")
+        }
+        print("<!-- 🚧✨ This file " f " was generated by AutoReadme ✨🚧 -->")
+        print("<meta charset=\x27utf-8\x27>")
+        print("<link rel=\x27stylesheet\x27 href=\x27" themecss "\x27 type=\x27text/css\x27>")
+    }
+    in_header {
+        gsub(/^#+[ \t]*|[ \t]*#+$/, "", $0)
+        print("<input type=\x27checkbox\x27 id=\x27tree-toggle\x27>")
+        print("<label for=\x27tree-toggle\x27><pre><b>" $0 "</b></pre></label>")
+        print("<div id=\x27tree-panel\x27><pre><code>" tree "</code><div class=\x27tree-track\x27><div class=\x27tree-thumb\x27></div></div></pre></div>")
+        print("<div id=\x27settings-gear\x27>")
+        if ( settingsicon == "random" ) {
+            print("<span class=\x27gear-icon\x27></span>")
+        } else {
+            print("<span class=\x27gear-icon\x27>" settingsicon "</span>")
+        }
+        print("<div class=\x27settings-panel\x27>")
+        print("<label for=\x27theme-select\x27>Theme:</label>")
+        print("<select id=\x27theme-select\x27>")
+        print("<option value=\x27light\x27>Light</option>")
+        print("<option value=\x27dark\x27>Dark</option>")
+        print("</select>")
+        print("</div></div>")
+        print("<script>")
+        print("(function(){")
+        print("function getCookie(n){var v=\x27; \x27+document.cookie,p=v.split(\x27; \x27+n+\x27=\x27);return p.length===2?p.pop().split(\x27;\x27).shift():null}")
+        print("function setCookie(n,v,d){var e=\x27\x27;if(d){var dt=new Date();dt.setTime(dt.getTime()+(d*86400000));e=\x27; expires=\x27+dt.toUTCString()}document.cookie=n+\x27=\x27+(v||\x27\x27)+e+\x27; path=/\x27}")
+        print("var saved=getCookie(\x27theme\x27)||\x27light\x27;")
+        print("document.documentElement.setAttribute(\x27data-theme\x27,saved);")
+        print("var sel=document.getElementById(\x27theme-select\x27);")
+        print("if(sel){sel.value=saved;sel.addEventListener(\x27change\x27,function(){var v=sel.value;document.documentElement.setAttribute(\x27data-theme\x27,v);setCookie(\x27theme\x27,v,365)})}")
+        print("var icons=[\x27⚙\x27,\x27🎨\x27,\x27🌸\x27,\x27🌺\x27,\x27🌻\x27,\x27🌼\x27,\x27🌷\x27,\x27🌵\x27,\x27🪻\x27,\x27🌹\x27,\x27🪷\x27,\x27🏵\x27];")
+        print("var gi=document.querySelector(\x27.gear-icon\x27);")
+        print("if(gi&&\x27" settingsicon "\x27===\x27random\x27)gi.textContent=icons[Math.floor(Math.random()*icons.length)];")
+        print("var gear=document.getElementById(\x27settings-gear\x27);")
+        print("var t=document.getElementById(\x27tree-toggle\x27);")
+        print("var seen=getCookie(\x27tree_seen\x27);")
+        print("if(!seen){")
+        print("t.checked=true;")
+        print("if(gear){gear.classList.add(\x27show\x27);setTimeout(function(){gear.classList.remove(\x27show\x27)},3000)}")
+        print("setCookie(\x27tree_seen\x27,\x271\x27,0.167);setTimeout(function(){t.checked=false},3000);")
+        print("}")
+        print("document.getElementById(\x27tree-panel\x27).onclick=function(e){")
+        print("  if(e.target.tagName!==\x27A\x27&&!e.target.closest(\x27.tree-track\x27)&&!e.target.closest(\x27[data-has-children]\x27))t.checked=false};")
+        print("var code=document.querySelector(\x27#tree-panel pre code\x27);")
+        print("var track=document.querySelector(\x27#tree-panel .tree-track\x27);")
+        print("var thumb=document.querySelector(\x27#tree-panel .tree-thumb\x27);")
+        print("if(code&&track&&thumb){")
+        print("function sync(){")
+        print("  var sh=code.scrollHeight,ch=code.clientHeight;")
+        print("  if(sh<=ch){track.style.display=\x27none\x27;return}")
+        print("  track.style.display=\x27\x27;")
+        print("  var ratio=ch/sh,th=Math.max(30,track.clientHeight*ratio);")
+        print("  thumb.style.height=th+\x27px\x27;")
+        print("  var space=track.clientHeight-th;")
+        print("  thumb.style.top=(code.scrollTop/(sh-ch))*space+\x27px\x27}")
+        print("code.addEventListener(\x27scroll\x27,sync);")
+        print("new MutationObserver(function(){setTimeout(sync,100)}).observe(t,{attributes:true});")
+        print("var dragging=false,startY,startTop;")
+        print("thumb.addEventListener(\x27mousedown\x27,function(e){")
+        print("  dragging=true;startY=e.clientY;startTop=parseFloat(thumb.style.top)||0;")
+        print("  thumb.classList.add(\x27dragging\x27);e.preventDefault()});")
+        print("document.addEventListener(\x27mousemove\x27,function(e){")
+        print("  if(!dragging)return;")
+        print("  var sh=code.scrollHeight,ch=code.clientHeight,th=thumb.offsetHeight;")
+        print("  var space=track.clientHeight-th,dy=e.clientY-startY;")
+        print("  var newTop=Math.max(0,Math.min(space,startTop+dy));")
+        print("  code.scrollTop=(newTop/space)*(sh-ch);e.preventDefault()});")
+        print("document.addEventListener(\x27mouseup\x27,function(){")
+        print("  dragging=false;thumb.classList.remove(\x27dragging\x27)});")
+        print("track.addEventListener(\x27click\x27,function(e){")
+        print("  if(e.target===thumb)return;")
+        print("  var rect=track.getBoundingClientRect(),y=e.clientY-rect.top;")
+        print("  var sh=code.scrollHeight,ch=code.clientHeight;")
+        print("  code.scrollTop=(y/track.clientHeight)*(sh-ch);e.preventDefault()});")
+        print("setTimeout(sync,200)}")
+        print("if(code){var dirs=code.querySelectorAll(\x27span.tree-dir[data-has-children]\x27);")
+        print("dirs.forEach(function(dir){")
+        print("  dir.addEventListener(\x27click\x27,function(e){")
+        print("    if(e.target.tagName===\x27A\x27)return;")
+        print("    e.stopPropagation();")
+        print("    var d=parseInt(dir.getAttribute(\x27data-depth\x27),10);")
+        print("    var folded=dir.classList.toggle(\x27folded\x27);")
+        print("    var sib=dir.nextElementSibling;")
+        print("    while(sib){")
+        print("      var sd=parseInt(sib.getAttribute(\x27data-depth\x27),10);")
+        print("      if(sd<=d)break;")
+        print("      if(folded){sib.classList.add(\x27hidden\x27);sib.classList.remove(\x27folded\x27)}")
+        print("      else{sib.classList.remove(\x27hidden\x27)}")
+        print("      sib=sib.nextElementSibling}")
+        print("    if(typeof sync===\x27function\x27)sync()})})}")
+        print("})()")
+        print("</script>")
+        in_header = 0
+    }
+' "$README" > "$HEADER_OUT"
+
+# 📤 Extract everything before the '## Files' section
+(
+print "<!-- 🚧✨ This file $README_OUT was generated by AutoReadme ✨🚧 -->"
+awk '
+    BEGIN { in_body = 1 }
+    /^## Files/ { in_body = 0 }
+    in_body { print }
+' "$README" | LC_ALL=en_US.UTF-8 $MARKDOWN 
+print ""
+
+# 🖼️ Add any Images if they exist
+if [ -f .imageindex ] ; then
+  print "<hr size='10' style='background:url(\"/icons/plaid.gif\")' />"
+  cat .imageindex 
+  rm -f .imageindex # I see not reason to keep this file ....
+fi
+
+print "<hr size='10' style='background:url(\"/icons/small/rainbow.gif\")' />" ) > "$README_OUT"
+
+print "✅ Success: $HEADER_OUT and $README_OUT created from $README using b4markdown ✨"
+

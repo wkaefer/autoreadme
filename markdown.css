@@ -1,0 +1,403 @@
+/*
+ *
+ * This is the markdown.css use in apache output from
+ * directory listings.
+ *
+ *  IndexStyleSheet "/.kaefer.css"
+ *
+ * It is called markdown.css, because most of the 
+ * web pages servered were created using markdown.
+ *
+ * This is the checkreadme script which calls
+ * a markdown program to create files from the README.md
+ * file.
+ *
+ * This file needs to be excluded in the apache configuration
+ * for the content server.
+
+ * lighter  darker
+ * CFDEE9 - blue(darker)
+ * E4EEF8 - BED5EE blue
+ * E5F1CC - BEDC7F green
+ * FAEFD0 - F3D788 yellow
+ * F7DCCC - ECA77F red
+ * EEE2D7 - brown
+ * E8E5E2 - black on grey
+ */
+
+.tartan	{ font-size: smaller; color: blue }
+.calendar { font-size: smaller }
+
+/* doctype html */
+
+html {
+	height:100%;
+	width:100%;
+}
+
+body {
+	font-size:20px;
+	/*font-family:monospace;*/
+	font-family: monospace, sans-serif, arial, helvetica, Fixedsys, "8514fix";
+	/*font-family: sans-serif, arial, helvetica, monospaced, Fixedsys, "8514fix";*/
+	color: var(--text-color);
+	background: var(--bg-color);
+	/*height:100%;*/
+	/*width:100%;*/
+    /*  overflow:hidden;  * Because for an iframe, you will end up with two scroll bars */
+    /*	overflow:hidden; */
+	/*	overflow:auto; */
+}
+
+h1 { color: var(--heading1-color); }
+h2 { color: var(--heading2-color); }
+h3 { color: var(--heading3-color); }
+h5 { color: var(--heading5-color); }
+h6 { color: var(--heading6-color); }
+
+
+
+
+hr {
+	display:block;
+	border:none;
+	height:10px;
+	background-image:url('/icons/gunn.gif');
+	}
+
+a:hover {
+	color: var(--link-hover-color);
+	background: var(--link-hover-bg);
+}
+
+pre a:hover {
+	color: var(--link-hover-color);
+	background: var(--link-hover-bg);
+}
+
+a:active {
+	background-image: url('/.icons/gunn.gif'); /* /console/gunn.gif */
+}
+
+a:focus {
+	background-color: var(--link-hover-color);
+}
+
+a:link, a:visited {
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+/////////////////////////////////////////////////////////////////////
+ul {
+	/*font-family:monospace;*/
+	list-style-image: url('/.icons/small_green_ball.gif');
+    //list-style: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+}
+
+/* List Items */
+
+li {
+    /*display: flex;  Use flexbox to allow content to expand */
+    display: block;
+    align-items: center; /* Center items vertically */
+    text-align: left;
+    justify-content: space-between; /* Distribute space between the content and button */
+    width: 100%; /* Ensure the list item takes up the full width */
+    margin: 0;
+    padding: 0;
+}
+
+li .content {
+    flex-grow: 1; /* Allow the content to grow and fill the space */
+}
+
+li button {
+    margin-left: auto; /* Ensure the button stays on the far right */
+}
+
+/* QBOT: css syntax by heirarchy in file */
+ul li ul li {
+	list-style-image: url('/.icons/small_blue_ball.gif');
+}
+
+/* doesn't really work for ie? */
+li:hover { 
+	background-color: var(--li-hover-bg);
+}
+	
+/* Tables */
+
+table {
+	/*	border-width:1; */
+	/* border: solid thin;*/
+	border: 2px solid var(--table-border);
+	width:100%;
+	/*font-size:12px;*/
+	/*font-family: monospace;*/
+}
+
+th {
+	border: 1px solid #dddddd;
+	background: var(--table-header-bg);
+}
+
+tbody tr {
+	border: 1px solid #E4EEFB;
+}
+
+td  {
+	border: 1px solid #dddddd;
+}
+
+
+
+input {
+	background-color:#77EE77;
+}
+
+
+pre {
+	/*font-size:12px;*/
+	font-family: monospace; /* explicit: Apache directory listings override body font */
+}
+
+/* Emoji in <pre> blocks render at double-width in browsers, skewing
+   box-drawing art.  b4markdown wraps emoji in <span class="emoji">;
+   constrain them to exactly 2ch so they don't overflow. */
+pre span.emoji {
+	display: inline-block;
+	width: 2ch;
+	overflow: hidden;
+	text-align: center;
+	vertical-align: bottom;
+}
+
+code.sh {
+	background-color: var(--tree-bg);
+	font-weight: bold;
+}
+
+mark.gray {
+		background-color: var(--mark-gray);
+}
+
+mark.cyan {
+		background-color: var(--mark-cyan);
+}
+
+mark.green {
+		background-color: var(--mark-green);
+}
+
+mark.blue {
+		background-color: var(--mark-blue);
+}
+
+mark.purple {
+		background-color: var(--mark-purple);
+}
+
+mark.yellow {
+		background-color: var(--mark-yellow);
+}
+
+mark.red {
+		background-color: var(--mark-red);
+}
+
+mark.orange {
+		background-color: var(--mark-orange);
+}
+
+/* Admontions */
+.admonition {
+  border-left: 5px solid var(--admonition-border);
+  background-color: var(--admonition-bg);
+  padding: 10px 15px; /* Padding for spacing */
+  margin: 20px 0; /* Margin for spacing between elements */
+  border-radius: 5px; /* Rounded corners */
+}
+
+.admonition-title {
+  font-weight: bold; /* Bold title */
+  font-size: 1.2em; /* Larger font size */
+  margin-bottom: 10px; /* Space below title */
+  color: var(--admonition-title);
+  text-transform: uppercase; /* Capitalize title */
+}
+
+.admonition p {
+  margin: 0; /* Remove default margin */
+  font-size: 1em; /* Standard font size */
+  line-height: 1.5; /* Line height for readability */
+}
+
+.note {
+	/*background-image:url('/.icons/corn.gif');*/
+	}
+
+
+.indexcoldesc {
+	color=red;
+	}
+
+/* Apache mod_autoindex break row - hr fills cell edge-to-edge */
+tr.indexbreakrow th {
+	padding: 0 !important;
+	margin: 0;
+	line-height: 0;
+	font-size: 0;
+	border: none;
+}
+tr.indexbreakrow th hr {
+	display: block;
+	width: 100%;
+	height: 10px;
+	margin: 0 !important;
+	padding: 0;
+	border: none;
+}
+
+li {
+    position: relative; /* Ensure the li element is positioned relatively to contain the button */
+}
+
+li button {
+    background-color: transparent; /* Make the button background transparent */
+    position: absolute;
+    right: 0; /* Align the button to the far right */
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust the vertical alignment */
+    border: none; /* Remove the border */
+    color: inherit; /* Inherit text color from the parent element */
+    font: inherit; /* Inherit font properties (family, size, weight, etc.) from the parent element */
+    padding: 0; /* Remove padding to prevent additional spacing */
+    cursor: pointer; /* Ensure the cursor shows as a pointer (hand) */
+    outline: none; /* Remove the default outline on focus */
+}
+
+/* Does not work */
+li button:hover {
+	color=red;
+}
+
+/* --- tree-panel: collapsible directory tree in .header.html --- */
+#tree-toggle { display: none; }
+#tree-toggle ~ label { cursor: pointer; display: block; }
+#tree-toggle ~ label pre b::after { content: " ▶"; font-size: 0.7em; }
+#tree-toggle:checked ~ label pre b::after { content: " ▼"; }
+#tree-panel {
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.4s ease-out;
+}
+#tree-panel pre {
+	margin: 0;
+	position: relative;
+	display: flex;
+	background: var(--tree-bg);
+	border-left: 3px solid var(--tree-border);
+	font-size: 0.75em;
+}
+#tree-panel pre code {
+	display: block;
+	padding: 4px 12px;
+	max-height: 50vh;
+	overflow-y: auto;
+	overflow-x: hidden;
+	flex: 1;
+	scrollbar-width: none;           /* Firefox: hide native */
+}
+#tree-panel pre code::-webkit-scrollbar {
+	display: none;                    /* Chromium: hide native */
+}
+#tree-panel .tree-track {
+	width: 28px;
+	flex-shrink: 0;
+	order: -1;
+	background:
+		repeating-linear-gradient(
+			45deg,
+			#c6e2a0 0px, #c6e2a0 6px,
+			#d9efc4 6px, #d9efc4 12px,
+			#b5d68a 12px, #b5d68a 18px,
+			#d9efc4 18px, #d9efc4 24px
+		);
+	border-left: 1px solid #8ab57b;
+	border-right: 2px solid #009879;
+	box-shadow: inset -2px 0 4px rgba(0,0,0,0.12);
+	position: relative;
+	cursor: pointer;
+}
+#tree-panel .tree-thumb {
+	position: absolute;
+	left: 2px;
+	right: 2px;
+	min-height: 30px;
+	background:
+		repeating-linear-gradient(
+			45deg,
+			rgba(255,255,255,0.20) 0px, rgba(255,255,255,0.20) 4px,
+			transparent 4px, transparent 8px
+		),
+		repeating-linear-gradient(
+			-45deg,
+			rgba(0,80,50,0.15) 0px, rgba(0,80,50,0.15) 4px,
+			transparent 4px, transparent 8px
+		),
+		linear-gradient(180deg, #34c798 0%, #009879 40%, #006644 100%);
+	border: 2px solid #a5d6a0;
+	border-radius: 14px;
+	box-shadow: inset 0 1px 2px rgba(255,255,255,0.3),
+	            0 1px 3px rgba(0,0,0,0.15);
+	transition: background 0.15s;
+}
+#tree-panel .tree-thumb:hover,
+#tree-panel .tree-thumb.dragging {
+	background:
+		repeating-linear-gradient(
+			45deg,
+			rgba(255,255,255,0.28) 0px, rgba(255,255,255,0.28) 4px,
+			transparent 4px, transparent 8px
+		),
+		repeating-linear-gradient(
+			-45deg,
+			rgba(0,80,50,0.18) 0px, rgba(0,80,50,0.18) 4px,
+			transparent 4px, transparent 8px
+		),
+		linear-gradient(180deg, #45d4a6 0%, #11a787 40%, #007a55 100%);
+	border-color: #7bc47a;
+}
+#tree-toggle:checked ~ #tree-panel {
+	max-height: 100vh;
+	transition: max-height 0.6s ease-in;
+	cursor: pointer;
+}
+#tree-panel a {
+	color: var(--tree-link-color);
+	text-decoration: none;
+}
+#tree-panel a:hover {
+	text-decoration: underline;
+	color: var(--tree-link-hover);
+}
+
+/* 🪭 Subtree folding — click a parent directory to hide/show its children */
+/* tree-dir spans are inline; <pre> newlines provide line breaks */
+#tree-panel span.tree-dir[data-has-children] {
+	cursor: pointer;
+}
+#tree-panel span.tree-dir[data-has-children]::after {
+	content: " ▼";
+	font-size: 0.65em;
+	opacity: 0.5;
+}
+#tree-panel span.tree-dir.folded::after {
+	content: " ▶";
+}
+#tree-panel span.tree-dir.hidden {
+	display: none;
+}

@@ -1,0 +1,119 @@
+#!/bin/bash
+
+MAX_BKUP="${MAX_BKUP:-999}"
+REALLY_REMOVE="no"
+
+whereareyou=`realpath $0`
+if [ -f "$whereareyou" ] ; then
+	foldericon="${whereareyou%/*}/recycle.jpg"
+fi
+
+# Keep track of folder.jpg copies
+declare -A icons
+
+show_help() {
+  cat <<EOF
+Usage: bkup [-r] FILE [FILE...]
+
+Create timestamped or versioned backups of regular files.
+
+Each file will be backed up to a .backups/ directory in the same location,
+with a numeric suffix (e.g., file.txt.001). Only regular files are processed.
+
+Options:
+  -r         Remove (move) the original file into .backups/ instead of copying
+
+Environment Variables:
+  MAX_BKUP   Maximum number of backups to retain (default: 999)
+
+Other:
+  If a file named 'recycle.jpg' exists in the script's directory,
+  it will be copied to 'folder.jpg' in each .backups folder.
+
+Examples:
+  bkup myfile.txt
+  bkup -r myfile.txt
+  bkup *.conf
+
+EOF
+}
+
+mkdirbackup()
+{
+    if [ ! -d "$1" ] ; then
+        mkdir -p "$1"
+    fi
+	if [ -f "$foldericon" ] ; then
+        if [[ "${icons[$1]}" != "true" ]] ; then
+			cp -v "$foldericon" "$1/folder.jpg" || echo "🌵 cannot copy folder icon..."
+            icons[$1]="true"
+		fi
+    fi
+}
+
+bkup() {
+    for src in "$@"; do
+        if [[ ! -f "$src" ]]; then
+            echo "🚫 Missing file: $src"
+            continue
+        fi
+
+        dir=$(dirname "$src")
+        file=$(basename "$src")
+        name="${file%.*}"
+        ext="${file##*.}"
+        [[ "$name" == "$ext" ]] && ext=""  # no-extension case
+
+        backup_dir="$dir/.backups"
+        mkdirbackup "$backup_dir"
+
+        # Find existing backups matching pattern
+        existing=()
+        while IFS= read -r f; do
+            num="${f##*.}"  # extract the .NNN suffix
+            [[ "$num" =~ ^[0-9]{3}$ ]] && existing+=("$num")
+        done < <(find "$backup_dir" -maxdepth 1 -type f -name "${file}.[0-9][0-9][0-9]" -printf "%f\n")
+
+        next=""
+        for i in $(seq -w 001 ${MAX_BKUP}); do
+            if [[ ! " ${existing[*]} " =~ " ${i} " ]]; then
+                next="$i"
+                break
+            fi
+        done
+
+        if [[ -z "$next" ]]; then
+            # All 999 exist — overwrite the oldest
+            oldest=$(find "$backup_dir" -type f -name "${file}.[0-9][0-9][0-9]" -printf "%T@ %p\n" \
+                     | sort -n | head -n1 | cut -d' ' -f2-)
+            target="$oldest"
+            echo "♻️ Overwriting oldest backup: $target"
+        else
+            target="$backup_dir/${file}.${next}"
+        fi
+
+        case "$REALLY_REMOVE" in
+            yes)
+                mv "$src" "$target"
+                if [[ $? -eq 0 ]]; then
+                    echo "✅ Backup created: $target 🗃️"
+                    echo "🍩 File Removed: $src"
+                else
+                    echo "❌ Failed to backup: $src"
+                fi
+                ;;
+            *)  cp "$src" "$target"
+                if [[ $? -eq 0 ]]; then
+                    echo "✅ Backup created: $target 🗃️"
+                else
+                    echo "❌ Failed to backup: $src"
+                fi
+                ;;
+        esac
+    done
+}
+
+[[ "$1" == "--help" ]] && show_help && exit 0
+[[ "$1" == "-r" ]] && REALLY_REMOVE="yes" && shift
+
+bkup "$@"

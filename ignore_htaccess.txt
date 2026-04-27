@@ -1,0 +1,8 @@
+#1 This is the default .htaccess-only ignore pattern list
+#2 Create your own and place in ~/.config/autoreadme/ignore_htaccess.txt
+#3 One pattern per line; blank lines and # comments are ignored
+#4 These entries are appended to --ignore-patterns for .htaccess generation only
+
+# Example patterns:
+# private/
+# *.secret
