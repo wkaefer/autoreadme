@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+# 🌵 autoreadme — validate README.md against actual directory contents
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+
+import os
+import subprocess
+import unicodedata
+import re
+import sys
+
+import argparse
+
+parser = argparse.ArgumentParser(description="Validate README.md file table.")
+parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output.")
+args = parser.parse_args()
+VERBOSE = args.verbose
+
+def verbose(msg):
+    if VERBOSE:
+        print(msg, file=sys.stderr)
+
+
+README_PATH = "README.md"
+from ignore_list import IGNORE_LIST
+
+def is_git_ignored(path):
+    try:
+        result = subprocess.run(["git", "check-ignore", path],
+                                capture_output=True, text=True)
+        return result.returncode == 0
+    except Exception:
+        return False
+
+def list_directory_files():
+    result = []
+    for f in sorted(os.listdir(".")):
+        if not os.path.exists(f):
+            continue
+        if f in IGNORE_LIST:
+            continue
+        if is_git_ignored(f):
+            continue
+        display_name = f + "/" if os.path.isdir(f) and not os.path.islink(f) else f
+        result.append(display_name)
+    return result
+
+def is_blank(text):
+    return not unicodedata.normalize("NFKC", text).strip()
+
+def parse_readme_table(path=README_PATH):
+    entries = {}
+    if not os.path.exists(path):
+        return entries
+
+    with open(path, "r") as f:
+        lines = f.readlines()
+
+    files_section_found = False
+    in_table = False
+    for line in lines:
+        if line.strip().startswith("## Files"):
+            files_section_found = True
+            continue
+        if not files_section_found:
+            continue
+        if line.strip().startswith("| File"):
+            in_table = True
+            continue
+        if "-------" in line.strip():
+            continue
+        if in_table:
+            if not line.strip().startswith("|"):
+                break
+            parts = [col.strip() for col in line.strip().split("|")[1:-1]]
+            # Match columns with possible escaped pipes in the description
+            # match = re.match(r'^\|\s*(\S+)\s*\|\s*(\S+)\s*\|\s*((?:[^|\\]|\\.)+)\s*\|$', line.strip())
+            # Match rows with optional emoji and possible escaped pipes in the description
+            match = re.match(r'^\|\s*(!?\S*)\s*\|\s*(\S*)\s*\|\s*((?:[^|\\]|\\.)+)\s*\|$', line.strip())
+            if match:
+                filename, emoji, description = match.groups()
+                # Replace escaped pipes with actual pipe character
+                description = description.replace(r'\|', '|')
+                entries[filename] = description
+                verbose(" "+filename+" is in README.md")
+            else:
+                print(f"⚠️  Malformed table row: {line.strip()}")
+                continue
+    return entries
+
+def validate_readme():
+    entries = parse_readme_table()
+    files = list_directory_files()
+    errors = []
+
+    # Normalize: strip trailing / for comparison
+    norm_entries = {k.lstrip("!").rstrip("/"): k for k in entries}
+
+    for f in files:
+        nf = f.rstrip("/")
+        verbose(" Checking File "+f)
+        if nf not in norm_entries:
+            errors.append(f"⚠️  File '{f}' exists but is not listed in README.md")
+
+    norm_files = set(f.rstrip("/") for f in files)
+    for name in entries:
+        nn = name.lstrip("!").rstrip("/")
+        is_bang = name.startswith("!")
+        is_ignored = nn in IGNORE_LIST or is_git_ignored(nn)
+        file_exists = os.path.exists(nn)
+        has_desc = not is_blank(entries[name])
+
+        verbose(f" Checking Entry {nn} (bang={is_bang} ignored={is_ignored} exists={file_exists} desc={has_desc})")
+
+        if is_bang:
+            # !-prefixed: file may not exist, only report empty description
+            # if the file is actually present on disk
+            if file_exists and not has_desc:
+                errors.append(f"⚠️  File '{name}' listed in README.md but has empty description")
+        elif is_ignored:
+            # On ignore list: file need not be in README, but if it is,
+            # it still needs a description and should exist on disk
+            if not file_exists:
+                errors.append(f"❌ File '{name}' listed in README.md but not found")
+            if not has_desc:
+                errors.append(f"⚠️  File '{name}' listed in README.md but has empty description")
+        else:
+            # Normal file: must exist and have a description
+            if nn not in norm_files:
+                if not file_exists:
+                    errors.append(f"❌ File '{name}' listed in README.md but not found")
+            if not has_desc:
+                errors.append(f"⚠️  File '{name}' listed in README.md but has empty description")
+
+    if errors:
+        print("checkreadme: issues found:")
+        for err in errors:
+            print(" -", err)
+        return 1
+    else:
+        print("✅ README.md file table is valid.")
+        return 0
+
+if __name__ == "__main__":
+    raise SystemExit(validate_readme())
+
+# vi: ft=python et ts=4 sw=4 sts=4

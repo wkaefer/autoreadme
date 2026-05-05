@@ -1,0 +1,106 @@
+#!/bin/bash
+# 🌵 autoreadme — unified pipeline orchestrator
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+set -e
+verbose=""
+whereareyou=`realpath $0`
+if [ -f "$whereareyou" ] ; then
+    PATH="${whereareyou%/*}:$PATH"
+else
+    echo "😡 Error: Cannot determine location of $0"
+    exit 1
+fi
+
+for p
+do
+    case "$p" in
+            -h|--h|help)
+                cat "${whereareyou%/*}/help.txt"
+                exit 0
+                ;;
+            -v) verbose="-v"
+                shift
+                ;;
+    esac
+done
+
+if ! command -v bkup >/dev/null 2>&1; then
+    echo "😡 Error: bkup not found. Cannot proceed."
+    exit 1
+fi
+
+if [ ! -f README.md ] ; then
+    echo "🤖 README.md not found, creating template."
+cat << 'EOF' > README.md
+# Unknown Project #
+
+## Files ##
+
+| File                 | 🧿 | Description          |
+|----------------------|----|----------------------|
+
+EOF
+elif ! grep -Eq '^##[[:space:]]+Files([[:space:]]*##)?[[:space:]]*$' README.md ; then
+    echo "🤖 README.md missing Files section, appending template."
+cat << 'EOF' >> README.md
+
+## Files ##
+
+| File                 | 🧿 | Description          |
+|----------------------|----|----------------------|
+
+EOF
+fi
+
+bkup README.md
+
+echo "🧮 Generating table..."
+generate_table $verbose > .backups/.table.new 
+
+echo "🔗 Merging with existing README..."
+merge_table README.md < .backups/.table.new > .backups/.table.merged
+
+echo "✍️ Updating README.md..."
+awk '
+    BEGIN { in_table = almost_in_table = 0 }
+    /^## Files/ {
+        print;
+        almost_in_table = in_table = 1;
+        next
+    }
+    almost_in_table && !/^\|/ { print; next }
+    almost_in_table && in_table && /^\|/ {
+        system("cat .backups/.table.merged");
+	almost_in_table = 0
+        next
+    }
+    in_table && !/^\|/ {
+	in_table = 0;
+        almost_in_table = 0
+    }
+    !in_table { print }
+' README.md > .README.new
+
+mv .README.new README.md
+
+case `pwd` in
+    /home/*)
+        echo "🖼️ Checking for Images"
+        mkimageindex > .imageindex
+        if [ ! -s .imageindex ] ; then
+            rm -f .imageindex
+        fi
+        ;;
+esac
+
+echo "🌐 Generating HTML from updated README..."
+generate_html "$@"
+
+echo "📄 Creating extra files..."
+generate_files "$@"
+
+echo "🕵️ Checking README integrity..."
+checkreadme
+
+echo "✅ Done: README.md and related files are now refreshed!"

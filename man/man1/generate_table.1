@@ -1,0 +1,54 @@
+.TH GENERATE_TABLE 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+generate_table \- Generate a Markdown table of files with emojis and descriptions
+.SH SYNOPSIS
+.B generate_table
+[\fB\-v\fR|\fB\-\-verbose\fR]
+.SH DESCRIPTION
+.B generate_table
+scans the current directory and generates a Markdown table listing all files (excluding ignored ones). Each file is assigned an emoji based on its type/extension, and includes a description field.
+.PP
+The output is designed to be piped into
+.BR merge_table (1)
+to combine with existing README.md entries.
+.SH OPTIONS
+.TP
+.B \-v, \-\-verbose
+Enable verbose output showing MIME type detection and emoji selection process.
+.SH OUTPUT FORMAT
+The output is a Markdown table with the following columns:
+.TP
+.B File
+The filename
+.TP
+.B 🧿
+An emoji representing the file type
+.TP
+.B Description
+A brief description (initially empty, filled by merge_table)
+.SH EXAMPLES
+.TP
+Generate table for current directory:
+.B generate_table
+.TP
+Generate table with verbose output:
+.B generate_table \-v
+.TP
+Pipe to merge with README:
+.B generate_table | merge_table README.md
+.SH FILES
+.TP
+.B ignore_list.txt
+Local ignore list file
+.TP
+.B ~/.config/autoreadme/ignore_list.txt
+User-specific ignore list (takes precedence)
+.TP
+.B .gitignore
+Git ignore rules are respected
+.SH SEE ALSO
+.BR merge_table (1),
+.BR autoreadme (1),
+.BR checkreadme (1)
+.SH AUTHOR
+AutoReadme project

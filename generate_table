@@ -1,0 +1,282 @@
+#!/usr/bin/env python3
+# 🌵 autoreadme — scan directory and emit Markdown file table with emojis
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+
+import os
+import mimetypes
+import subprocess
+import sys
+import unicodedata
+
+# XDG_UTILS_DEBUG_LEVEL=99999
+
+import argparse
+
+parser = argparse.ArgumentParser(description="Generate a table with emojis.")
+parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output.")
+args = parser.parse_args()
+VERBOSE = args.verbose
+
+def verbose(msg):
+    if VERBOSE:
+        print(msg, file=sys.stderr)
+
+# Files to ignore in the generated output
+from ignore_list import IGNORE_LIST
+
+def get_git_ignored_files():
+    try:
+        result = subprocess.run(
+            # ToDo: Can't seem to escape the depths without using find
+            # ToDo: Why not use git check-ignore like in checkreadme ?
+            # ["git", "ls-files", "--others", "-i", "--exclude-standard"],
+            ["git", "ls-files", "-o", "-i", "--exclude-standard", "--directory" ], # -- ':./*' ':(exclude):./*/*'
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=True,
+            text=True
+        )
+
+        # return set(result.stdout.splitlines())
+        paths = set()
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.endswith(("/", "@")):
+                line = line[:-1]
+            paths.add(line)
+            verbose("ignore "+line)
+        return paths
+    except subprocess.CalledProcessError:
+        return set()
+
+GIT_IGNORED_FILES = get_git_ignored_files()
+
+def is_ignored(path):
+    basename = os.path.basename(path)
+    rel_path = os.path.relpath(path, start=os.getcwd())
+    return basename in IGNORE_LIST or rel_path in GIT_IGNORED_FILES
+
+
+EMOJI_MAP = {
+    ".ansi": "🌻",
+    ".ans": "🌻",
+    ".bat": "💻",
+    ".html": "🌐",
+    ".mhtml": "🌐",
+    ".md": "📝",
+    ".c": "📄",
+    ".cpp": "📄",
+    ".css": "🎨",
+    ".csv": "📊",
+    ".C": "📄",
+    ".h": "📑",
+    ".hh": "📑",
+    ".py": "🐍",
+    ".sh": "🔩",
+    ".txt": "📃",
+    ".js": "🥨",
+    ".json": "🔢",
+    ".xml": "🗂️",
+    ".jpg": "🖼️",
+    ".png": "🖼️",
+    ".pws": "📗",
+    ".svg": "🖼️",
+    ".mp3": "🎵",
+    ".mp4": "🎥",
+    ".log": "🌲",
+    ".err": "🚧",
+    ".cron": "⏳",
+    ".awk": "🔩"
+}
+
+EMOJI_MAP2 = {
+    "Makefile": "🛠️",
+    "makefile": "🚂",
+    "makerules": "🚃",
+    ".gitignore": "🚫",
+    "license": "📜",
+    "readme": "📘"
+    }
+
+def get_mime_emoji(mime_type):
+    if not mime_type:
+        return '❓'
+    
+    # Specific mappings first
+    mime_to_emoji = {
+        'text/plain': '📄',
+        "text/x-makefile": "🚂",
+        'image/ico': '🖼',
+        'image/gif': '🖼',
+        'image/jpeg': '🖼',
+        'image/jpeg': '🖼',
+        'image/webp': '🖼',
+        'application/pdf': '📄',
+        'application/zip': '📦',
+        'application/x-executable': '🔨',
+        'application/x-shellscript': '🔩',
+        'inode/directory': '📁',
+        'inode/symlink': '🔗',
+        'application/json': '🔢',
+        'text/html': '🌐',
+        'text/x-script.python': '🐍',
+        'text/x-python': '🐍',
+        'text/x-python3': '🐍',
+        'application/octet-stream': '📦',
+    }
+    
+    if mime_type in mime_to_emoji:
+        return mime_to_emoji[mime_type]
+    
+    # Generic fallback
+    main_type = mime_type.split('/')[0]
+    return {
+        "image": "🖼️",
+        "text": "📄",
+        "application": "📦"
+    }.get(main_type, '❓')
+
+def get_description(path):
+    descriptions = {
+        "makefile":     "Instructions",
+        "README":       "Project overview",
+        "README.md":    "Project overview (Markdown)",
+        "license":      "License information",
+        ".gitignore":   "Git ignore rules",
+        ".htaccess":    "Apache config",
+        ".json":        "JSON data",
+        ".py":          "Python script",
+        ".sh":          "Shell script",
+        ".md":          "Markdown file",
+        ".txt":         "Text document"
+        # add more as needed
+    }
+    name = os.path.basename(path)
+    key = name.lower()
+    # Exact match, then by extension
+    if key in descriptions:
+        return descriptions[key]
+    for ext in descriptions:
+        if key.endswith(ext):
+            return descriptions[ext]
+    return ""
+
+def get_mime_type(path):
+    verbose(" get_mime_type("+path+")")
+    mime_type, _ = mimetypes.guess_type(path)
+    if not mime_type:
+        try:
+            verbose("  xdg-mime query filetype "+path+"")
+            result = subprocess.run(
+                ['xdg-mime','query','filetype', path ],
+                capture_output = True,
+                text=True,
+                check=True
+            )
+            mime_type = result.stdout.strip()
+            verbose(f"MIME type: {mime_type}")
+        except Exception:
+            try:
+                verbose("   file --mime-type -b "+path+"")
+                result = subprocess.run(
+                    ['file', '--mime-type', '-b', path],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                mime_type = result.stdout.strip()
+                verbose(f"MIME type: {mime_type}")
+            except Exception:
+                mime_type = None
+    return mime_type
+
+def pick_emoji(path):
+    verbose("pick_emoji("+path+")")
+    basename = os.path.basename(path).lower()
+    if os.path.islink(path):
+        return "🔗"
+    if os.path.isdir(path):
+        return "📁"
+    for key, emoji in EMOJI_MAP.items():
+        if basename.endswith(key):
+            return emoji
+    for key, emoji in EMOJI_MAP2.items():
+        if key == basename:
+            return emoji
+    mime_type = get_mime_type(path)
+    if mime_type:
+        # print(mime_type)
+        return get_mime_emoji(mime_type)
+    return
+
+#def center_emoji(emoji):
+#    return f" {emoji} "
+def center_emoji(emoji, width=3):
+    # Assuming emoji and placeholder have the same width
+    placeholder = "X"  # Placeholder character
+    total_padding = width - len(placeholder)
+    padding_left = total_padding // 2
+    padding_right = total_padding - padding_left
+    return f"{' ' * padding_left}{placeholder}{' ' * padding_right}".replace(placeholder, emoji)
+
+def display_width(s):
+    """Display width of a string, accounting for wide/emoji characters."""
+    w = 0
+    for ch in s:
+        if unicodedata.east_asian_width(ch) in ('W', 'F') or ord(ch) >= 0x1F000:
+            w += 2
+        elif unicodedata.category(ch)[0] in ('M', 'C'):
+            continue
+        else:
+            w += 1
+    return w
+
+def ljust_wide(s, width):
+    """Left-justify string to target display width."""
+    pad = width - display_width(s)
+    return s + ' ' * max(pad, 0)
+
+def format_table(entries):
+    max_name_len = max(display_width(name) for name, _ in entries) + 2
+    name_col = max(max_name_len, 20)
+    emoji_col = 4
+    total_width = name_col + emoji_col + 3 + 1 + 1  # separators and spaces
+    desc_col = max(72 - total_width - 4, 20)  # padding and pipes
+    total_width = name_col + emoji_col + desc_col + 6  # final check
+
+    header = f"| {ljust_wide('File', name_col)} | 🧿 | {ljust_wide('Description', desc_col)} |"
+    divider = f"|{'-' * (name_col + 2)}|{'-' * emoji_col}|{'-' * (desc_col + 2)}|"
+    rows = [header, divider]
+
+    for name, desc in sorted(entries, key=lambda x: x[0].lower()):
+        # Strip trailing / for filesystem lookups
+        base = name.rstrip("/")
+        # Use get_description if desc is empty
+        if not desc:
+            desc = get_description(base)
+        emoji = center_emoji(pick_emoji(base))
+        rows.append(f"| {ljust_wide(name, name_col)} |{emoji}| {ljust_wide(desc, desc_col)} |")
+
+    return rows
+
+def main():
+    entries = []
+    for item in os.listdir("."):
+        if item == os.path.basename(__file__):
+            continue
+        if not is_ignored(item):
+            display_name = item + "/" if os.path.isdir(item) and not os.path.islink(item) else item
+            entries.append((display_name, ""))
+    if not entries:
+        print("Empty Directory")
+        return
+    for line in format_table(entries):
+        print(line)
+
+if __name__ == "__main__":
+    main()
+
+# vi: ft=python et ts=4 sw=4 sts=4

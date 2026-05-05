@@ -1,0 +1,435 @@
+#!/bin/ksh93
+# 🌵 autoreadme — Apache CGI filter for live README.md (.md) rendering
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+
+print "*********************** LOG ********************************* ${SCRIPT_FILENAME##*/} " 1>&2
+
+print "<!doctype html>"
+print "<html lang='en'>"
+print "<!-- Greetings from $0 -->"
+print "<meta http-equiv='expires' content='Tue, 11 Mar 2025 01:23:45 GMT' />"
+print "<META HTTP-EQUIV='CACHE-CONTROL' CONTENT='NO-CACHE' />"
+print '<meta http-equiv="X-UA-Compatible" content="chrome=1, IE=edge" />'
+print '<meta charset="utf-8">'
+print "<head><title>${SCRIPT_FILENAME##*/}</title>"
+
+#rint "<script type='text/javascript' src='/scroll.js'></script>"
+#rint "<script type='text/javascript' src='/logs.js'></script>"
+div=""
+case "$SCRIPT_NAME" in
+*.md)   for f in ${DOCUMENT_ROOT}/${SCRIPT_NAME%/*}/* ; do
+		f="${f#${DOCUMENT_ROOT}/}"
+		typeset -l x="$f"
+		case "$x" in
+			*.gif|*.jpg|*.jpeg|*.png|*.webp)
+				div="right"
+				break
+		esac
+	done
+	;;
+esac
+
+# css -markdown.css
+# -----------------
+if [[ -f "${DOCUMENT_ROOT}/markdown.css" ]]; then
+	css="/markdown.css"
+elif [[ -f "${DOCUMENT_ROOT}/.markdown.css" ]]; then
+	css="/.markdown.css"
+else
+	css="/markdown.css"
+fi
+print "<link href='${css}' rel='stylesheet' type='text/css' />"
+
+# css -themes.css
+# -----------------
+if [[ -f "${DOCUMENT_ROOT}/themes.css" ]]; then
+	css="/themes.css"
+elif [[ -f "${DOCUMENT_ROOT}/.themes.css" ]]; then
+	css="/.themes.css"
+else
+	css="/themes.css"
+fi
+print "<link href='${css}' rel='stylesheet' type='text/css' />"
+
+# css -markdown.rf.css
+# --------------------
+case "$div" in
+	right)
+        if [[ -f "${DOCUMENT_ROOT}/markdown.rf.css" ]]; then
+			css="/markdown.rf.css"
+		elif [[ -f "${DOCUMENT_ROOT}/.markdown.rf.css" ]]; then
+			css="/.markdown.rf.css"
+		else
+			css="/markdown.css"
+		fi
+        print "<link href='${css}' rel='stylesheet' type='text/css' />"
+        ;;
+esac
+
+print "</head>"
+print "<body>"
+case "$div" in
+	right) print "<div class='main-content'>";;
+esac
+
+# see checkreadme
+if whence markdown_py > /dev/null ; then
+#if whence markdown > /dev/null ; then
+	# from txt2html
+	# @- - gray
+	# @+ - cyan
+	# @g - green
+	# @b - blue
+	# @p - purple
+	# @y - yellow
+	# @r - red
+	# @o - orange
+
+	
+	sed \
+		-e 's,^@-\(.*$\),<mark class="gray">\1</mark>    ,'\
+		-e 's,^@+\(.*$\),<mark class="cyan">\1</mark>    ,'\
+		-e 's,^@g\(.*$\),<mark class="green">\1</mark>    ,'\
+		-e 's,^@b\(.*$\),<mark class="blue">\1</mark>    ,'\
+		-e 's,^@p\(.*$\),<mark class="purple">\1</mark>    ,'\
+		-e 's,^@y\(.*$\),<mark class="yellow">\1</mark>    ,'\
+		-e 's,^@r\(.*$\),<mark class="red">\1</mark>    ,'\
+		-e 's,^@o\(.*$\),<mark class="orange">\1</mark>    ,' |
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+	# Auto-insert blank line before lists (Option C — see b4markdown)
+	# markdown_py (CommonMark) requires a blank line before a list. When
+	# authors omit it after a label like "**What it does:**" followed by
+	# "1. ..." or "- ...", the list collapses into the preceding paragraph.
+	# This filter inserts the missing blank line. Skips fenced code blocks.
+	awk '
+		BEGIN { in_fence = 0; prev = ""; prev_blank = 1 }
+
+		/^[[:space:]]*(```|~~~)/ {
+			in_fence = !in_fence
+			print
+			prev = $0
+			prev_blank = 0
+			next
+		}
+
+		in_fence {
+			print
+			prev = $0
+			prev_blank = 0
+			next
+		}
+
+		{
+			is_list         = ($0   ~ /^[[:space:]]*([0-9]+\.|[-*+])[[:space:]]+/)
+			is_blank        = ($0   ~ /^[[:space:]]*$/)
+			prev_is_list    = (prev ~ /^[[:space:]]*([0-9]+\.|[-*+])[[:space:]]+/)
+			prev_is_heading = (prev ~ /^#+[[:space:]]/)
+
+			if (is_list && !prev_blank && !prev_is_list && !prev_is_heading) {
+				print ""
+			}
+
+			print
+			prev = $0
+			prev_blank = is_blank
+		}
+	' |
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+	markdown_py --encoding utf-8 -x extra |
+
+    # Mermaid Fixup
+    awk '
+        BEGIN { in_mermaid = 0; mermaid_included = 0; }
+        # Match mermaid start block
+        /^<pre><code class="language-mermaid">/ {
+            if ( mermaid_included == 0 ) {
+                print("<script src=\x27/.js/mermaid.min.js\x27></script>")
+                print("<script>")
+                print("  mermaid.initialize({ startOnLoad: true })")
+                print("</script>")
+                mermaid_included = 1;
+            }
+            sub(/^<pre><code class="language-mermaid">/, "<pre><code><div class=\"mermaid\">")
+            print 
+            in_mermaid = 1
+            next
+        }
+        # Match end block
+        /^<\/code><\/pre>$/ {
+            if (in_mermaid) {
+                print "</div>" $0
+                in_mermaid = 0
+                next
+            }
+        }
+        # Default: print unchanged
+        { print }' |
+
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+	sed \
+		-e 's/—/\&mdash;/g;' \
+		-e 's/–/\&ndash;/g;' \
+		-e 's/“/\&ldquo;/g;' \
+		-e 's/”/\&rdquo;/g;' \
+		-e 's/’/\&rsquo;/g;' \
+		-e 's/‘/\&lsquo;/g;' \
+		-e 's/…/\&hellip;/g' \
+		-e 's/·/\&middot;/g'  |
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+#cat file.json |
+#python3 -c "import sys, json, ast; data = ast.literal_eval(sys.stdin.read()); print(json.dumps(data, indent=4))"|
+#jq .assert_
+#$ cat file.json |
+#>   python3 -c "import sys, json, ast; data = ast.literal_eval(sys.stdin.read()); print(json.dumps(data, indent=4))" |
+#>   jq .asset_pointer
+#"file-service://file-Hx1cnmTf3PRNX58u34UrnC"
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+#	tee /tmp/xyzz.$$ |
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+	gawk '
+		@load "filefuncs"  # Load the file functions extension
+		{
+		if ( $0 ~ /^<p>{\x27content_type\x27: \x27image_asset_pointer\x27, \x27asset_pointer\x27: \x27file-service:\x2f\x2f/ ) {
+			f=$0
+			sub(/.*file-service:\/\//,"",f)
+			sub(/\x27.*/,"",f);
+			sub(/".*/,"",f);
+			p=ENVIRON["SCRIPT_FILENAME"];
+			if ( length(p) == 0 ) p=".";
+			gsub(/\/[^/]+$/, "", p);
+			dir[0]=( p )
+			img=f
+			t=$0
+			sub(/.*prompt.:/,"",t);
+			gsub(/\x27/,"",t);
+			sub(/^ /,"",t);
+			sub(/^ /,"",t);
+			sub(/:.*/,"",t);
+			sub(/, seed/,"",t);
+			n=length(f)
+			fts(dir,FTS_PHYSICAL,data)
+			#fts(dir,FTS_LOGICAL,data)
+			m=0
+			# system("set"); system("pwd");
+			for ( i in data ) {
+				if ( isarray(data[i]) ) {
+					for ( j in data[i] ) {
+						if ( substr(j,1,n) == f ) {
+							img=j;
+							break;
+						}
+						if ( ++m > 100 ) break;
+					}
+				}
+				if ( ++m > 100 ) break;
+			}
+			print("<a href=\x27" img "\x27  target=\x27_blank\x27 >");
+			print("<img src=\x27" img "\x27 width=\x27200\x27 height=\x27150\x27 title=\x27" t "\x27 ></img>");
+			if ( prompt != t ) print("<p><i>" t "</i></p>");
+					
+			print("</a>");
+		}
+		else
+		if ( $0 ~ /^<p>{"prompt":.*$/ ) {
+			prompt=$0
+			sub(/<p>{"prompt":"/,"",prompt);
+			sub(/",.*$/,"",prompt);
+			print("<p><i>" prompt "</i></p>");
+		}
+		else {
+			print($0);
+		}
+	     }
+	' |
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+	awk '
+	# State | Pattern1 | Pattern2  | Not-Pattern || Action
+	#     1 |   Yes    |           |             || A1
+	#     1 |          |   Yes     |             || A2
+	#     1 |          |           |    Yes      || A2
+	#     2 |   Yes    |           |             || A3
+	#     2 |          |   Yes     |             || A4
+	#     2 |          |           |    Yes      || A3
+	#     3 |   Yes    |           |             || A5
+	#     3 |          |   Yes     |             || A3
+	#     3 |          |           |    Yes      || A3
+	# Action:
+	#	A1 - queue(pattern), state=2
+	#	A2 - print, state=1
+	#	A3 - purge(print), print,state=1
+	#	A4 - queue(pattern), state=3
+	#	A5 - comment(queue),print,state=1
+
+	function fqueue(p) { queue[qcounter++]=p; }
+	function fpurge()  { for ( i = 1; i < qcounter; i++ ) { print(queue[i]); delete queue[i]; } qcounter=1; }
+	function dpurge()  { print "<!-- ";
+                             # print qcounter;
+			     for ( i = 1; i < qcounter; i++ ) { print(queue[i]); delete queue[i]; }
+			     qcounter=1;
+			     print "-->";}
+
+	BEGIN {
+		state=0;
+		qcounter=1;
+		machine[1,1] = 1;  machine[1,2] = 2;  machine[1,3] = 2;
+		machine[2,1] = 3;  machine[2,2] = 4;  machine[2,3] = 3;
+		machine[3,1] = 5;  machine[3,2] = 3;  machine[3,3] = 3;
+	}
+
+	{ klass=2 }
+	/^<p><strong>User:<\/strong><\/p>/      {  klass=1 }
+	/^<p><strong>Assistant:<\/strong><\/p>/ {  klass=1 }
+	/^<p><strong>Tool:<\/strong><\/p>/      {  klass=1 }
+	/^<hr \/>/                              {  klass=2 }
+
+	{ 
+		switch(machine[state,klass]) {
+			case 1:	fqueue($0);
+				state=2;
+				break;
+			case 2:	print;
+				state=1;
+				break;
+			case 3:	fpurge();
+				print
+				state=1;
+				break;
+			case 4:	fqueue($0);
+				state=3
+				break;
+			case 5:	dpurge();
+				print;
+				state=1;
+				break;
+			default:
+				print;
+				state=1;
+				break;
+		}
+	}
+	' |
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+	awk '
+	function fqueue(p) { queue[qcounter++]=p; }
+	function fpurge()  { for ( i = 1; i < qcounter; i++ ) { print(queue[i]); delete queue[i]; } qcounter=1; }
+	function dpurge()  { print "<!-- ";
+                             # print qcounter;
+			     for ( i = 1; i < qcounter; i++ ) { print(".... " queue[i]); delete queue[i]; }
+			     qcounter=1;
+			     print "-->";}
+	BEGIN {
+		skip=0;
+    		qcounter=1;
+	}
+
+	/^<p><strong>Tool:<\/strong><\/p>/ {
+		fqueue($0)
+		skip=1
+		next
+	}
+
+	/^<p>DALL.*E displayed 1 images\./ {
+    		if (skip==1) {
+			skip++
+			fqueue($0)
+			next  # Continue skipping
+		}
+	}
+
+	/^<hr \/>/ {
+		if (skip==2) {
+			fqueue($0)
+			skip = 0  # Stop skipping after this line
+			dpurge()
+        		next
+    		}
+	}
+
+	qcounter > 3 {
+		print("<-- qcounter=" qcounter " -->")
+		skip=0;
+	
+	}
+
+	{
+		fpurge()
+    		print  # Print everything else
+	}' |
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+	awk	-vs="${K5F2_SYSTEM:-System}" \
+		-vu="${K5F2_USER:-User}" \
+		-va="${K5F2_ASSISTANT:-Assistant}" \
+		-vt="${K5F2_TOOL:-Tool}" '
+		BEGIN {
+			hr=0;
+		}
+
+		$0 == "<hr />" && hr==1 {
+			print("<hr size=20 style=\x27background:url(/icons/greenpaper.jpg)\x27 />");
+			hr=0;
+			next;
+                }
+	
+		$0 == "<p><strong>System:</strong></p>" {
+			print("<p><strong>" s ":</strong></p>");
+			hr=1;
+			next;
+		}
+		
+		$0 == "<p><strong>User:</strong></p>" {
+			print("<p><strong>" u ":</strong></p>");
+			next;
+		}
+
+		$0 == "<p><strong>Assistant:</strong></p>" {
+			print("<p><strong>" a ":</strong></p>");
+			next;
+		}
+		
+		$0 == "<p><strong>Tool:</strong></p>" {
+			print("<p><strong>" t ":</strong></p>");
+			next;
+		}
+
+		{
+			print
+		}'
+#/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/**--__
+else
+	print '<pre>'
+	cat
+	print '</pre>'
+fi
+
+print "<hr size=20 style='background:url(/icons/small/rainbow.gif)' />";
+case "$div" in
+	right)	print "</div>"
+		print "<div class='right-frame'>"
+		print "<script>"
+		print "function openFullImage(url) {"
+		print " const win=window.open('','_blank',resizeable='yes');"
+                print " if ( win ) { win.document.write(\`<img src=\"\${url}\" style='width:100%'>\`); }"
+		print "}"
+		print "</script>"
+		for f in ${DOCUMENT_ROOT}/${SCRIPT_NAME%/*}/* ; do
+			print "<!-- $f -->"
+			f="${f#${DOCUMENT_ROOT}/}"
+			typeset -l x="$f"
+			case "$x" in
+				*.gif|*.jpg|*.jpeg|*.png|*.webp)
+				#rint "<a href='$f' target='_blank'>"
+  				#rint " <img src='$f' alt='$f'>"
+				#rint "</a>"
+				#rint "<a href='javascript:void(0);' onclick=\"window.open('$f', '_blank')\">"
+				#rint " <img src='$f' alt='$f'>"
+				#rint "</a>"
+				print " <img src='$f' alt='$f' onclick=\"openFullImage('$f')\" style='cursor:pointer;' >"
+				;;
+			esac
+		done
+		print "</div>"
+		;;
+esac
+print "</body></html>"
+
