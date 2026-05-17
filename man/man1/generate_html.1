@@ -1,0 +1,56 @@
+.TH GENERATE_HTML 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+generate_html \- Convert README.md to HTML files for Apache web servers
+.SH SYNOPSIS
+.B generate_html
+[\fB\-\-create_header\fR]
+.SH DESCRIPTION
+.B generate_html
+processes README.md and creates HTML files for Apache web server directory listings:
+.IP \(bu 2
+.B .header.html
+Contains the project title (first header section)
+.IP \(bu 2
+.B .readme.html
+Full README content excluding the "## Files ##" section
+.PP
+All content is processed through the b4markdown preprocessor before HTML conversion.
+.SH OPTIONS
+.TP
+.B \-\-create_header
+Create complete HTML document structure in .header.html with DOCTYPE, html, head, and body tags. Requires Apache IndexOptions +SuppressHTMLPreamble.
+.SH ENVIRONMENT VARIABLES
+.TP
+.B MARKDOWN
+Alternative markdown filter command. Default: b4markdown
+.TP
+.B MARKDOWN_CSS
+Relative path to CSS file for styling. Default: /.markdown.css
+.SH FILES
+.TP
+.B README.md
+Source markdown file
+.TP
+.B .header.html
+Generated HTML header file
+.TP
+.B .readme.html
+Generated full README HTML
+.TP
+.B .imageindex
+Optional image index file (auto-generated and removed after use)
+.SH DEPENDENCIES
+Requires b4markdown (or alternative MARKDOWN processor) and markdown_py to be available in PATH.
+.SH EXAMPLES
+.TP
+Generate HTML files:
+.B generate_html
+.TP
+Create complete HTML header:
+.B generate_html \-\-create_header
+.SH SEE ALSO
+.BR b4markdown (1),
+.BR generate_files (1),
+.BR autoreadme (1)
+.SH AUTHOR
+AutoReadme project

@@ -1,0 +1,31 @@
+#!/bin/bash
+# 🌵 autoreadme — convert images to multi-resolution .ico files
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+
+# Input file
+INPUT="$1"
+if [ ! -f "$INPUT" ] ; then
+	print Missing File 
+	exit 1
+fi
+
+# Output icon
+OUTPUT="${INPUT%.*}.ico"
+
+# Step 1: Create resized PNGs
+convert "$INPUT" -resize 16x16 16.png
+convert "$INPUT" -resize 32x32 32.png
+convert "$INPUT" -resize 48x48 48.png
+convert "$INPUT" -resize 256x256 256.png
+
+# Step 2: Combine into ICO
+convert 16.png 32.png 48.png 256.png "$OUTPUT"
+mkdir -p .backups
+mv 16.png 32.png 48.png 256.png .backups/
+
+# Step 1-2: Create all at once
+# convert "$INPUT" define icon:auto-resize=16,32,48,256 "$OUTPUT"
+
+# Step 3: Show icon contents
+identify "$OUTPUT"

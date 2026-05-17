@@ -1,0 +1,5 @@
+.backups/
+__pycache__/
+.vscode
+.copilot
+Mail

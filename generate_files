@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+# 🌵 autoreadme — generate Apache .htaccess / .contents / .info files
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+
+import os
+import html
+import argparse
+import re
+import fnmatch
+from pathlib import Path
+
+HTACCESS_IGNORE_FILE = Path.home() / ".config" / "autoreadme" / "ignore_htaccess.txt"
+
+# Internal-only static knownlist descriptions
+knownlist = {
+    ".gitignore": "Files git should ignore",
+    ".machines": "Directory of Different Machine Types",
+    ".machine": "Symbolic Link to machines/xxx",
+    ".machines": "🏭 Directory of Different Machine Types",
+    ".machine": "⚙️ Symbolic Link to machines/xxx",
+    ".htaccess": "Apache Server Directives, created from README.md",
+    ".contents": "Apache Server Directives for Content Server, created from README.md",
+    ".readme.html": "Created from README.md for Apache Server",
+    ".header.html": "Created from README.md for Apache Server",
+    ".info": "Created from README.md for tree command",
+    "README.md": "Informational File"
+}
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Generate auxiliary files from README.md.")
+    parser.add_argument("directory", nargs="?", default=".", help="Directory to process")
+    parser.add_argument("--no-htaccess", dest="no_htaccess", action="store_true", help="Do not generate .htaccess")
+    parser.add_argument("--create_header", dest="create_header", action="store_true", help="Place full header in .header.html")
+    # folder.jpg is excluded because it is used only by windows explorer, but use apache IndexIgnore so it is not displayed
+    parser.add_argument("--ignore", nargs="*", default=[".backups",".git","..netrc",".netrc",".ssh", "Downloads", ".backups","notfolder.jpg"], help="List of sensitive files to deny access to")
+    parser.add_argument("--ignore-patterns", nargs="*", default=["*.a","*.o","*.so","*.bak"], help="Regex patterns of file names to deny access to")
+    return parser.parse_args()
+
+def escape_html(s):
+    return html.escape(s)
+
+def load_ignore_patterns(ignore_file):
+    if not ignore_file.is_file():
+        return []
+
+    patterns = []
+    with ignore_file.open() as f:
+        for line in f:
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#"):
+                patterns.append(stripped)
+    return patterns
+
+def pattern_matches_existing_entry(base_path, pattern):
+    normalized = pattern.strip().lstrip("./")
+    if not normalized:
+        return False
+
+    has_glob = any(char in normalized for char in "*?[")
+    candidate = base_path / normalized.rstrip("/")
+    if not has_glob:
+        return candidate.exists()
+
+    if "/" in normalized:
+        return False
+
+    return any(fnmatch.fnmatch(entry.name, normalized) for entry in base_path.iterdir())
+
+def filter_existing_patterns(base_path, patterns):
+    return [pattern for pattern in patterns if pattern_matches_existing_entry(base_path, pattern)]
+
+def parse_table_entries(readme_path):
+    entries = []
+    files_section_found = False
+    in_table = False
+
+    if not readme_path.exists():
+        return entries
+
+    with readme_path.open() as f:
+        for line in f:
+            stripped = line.strip()
+            if stripped.startswith("## Files"):
+                files_section_found = True
+                continue
+            if not files_section_found:
+                continue
+            if stripped.startswith("| File"):
+                in_table = True
+                continue
+            if stripped.startswith("|:-") or stripped.startswith("|--"):
+                continue
+            if not stripped.startswith("|"):
+                in_table = False
+                continue
+            if in_table:
+                # Match rows with possible escaped pipes in the description
+                # match = re.match(r'^\|\s*(\S+)\s*\|\s*(\S+)\s*\|\s*((?:[^|\\]|\\.)+)\s*\|$', stripped)
+                # Match rows with optional emoji and possible escaped pipes in the description
+                match = re.match(r'^\|\s*(!?\S*)\s*\|\s*(\S*)\s*\|\s*((?:[^|\\]|\\.)+)\s*\|$', stripped)
+                if match:
+                    filename, emoji, desc = match.groups()
+                    # Replace escaped pipes with actual pipe character
+                    desc = desc.replace(r'\|', '|')
+                    full_desc = f"{emoji} {desc}".strip()
+                    if filename:
+                        filename = filename.lstrip("!")
+                        entries.append((filename, full_desc))
+                else:
+                    in_table = False
+
+    return entries
+
+def get_sorted_entries(readme_path, deny_files):
+    entries = parse_table_entries(readme_path)
+    # Add knownlist entries
+    for known, description in knownlist.items():
+        entries.append((known, description))
+    # Add Deny
+    for deny in deny_files:
+        entries.append((deny, "🛑 Access Denied"))
+    return sorted([(len(k), v, k.rstrip("/")) for k, v in entries], reverse=True)
+
+def _glob_to_regex(pattern):
+    """Convert a glob pattern or literal filename to an Apache-compatible regex."""
+    if any(c in pattern for c in "*?["):
+        # Glob pattern: *.bak → .*\.bak
+        escaped = re.escape(pattern)
+        escaped = escaped.replace(r'\*', '.*')
+        escaped = escaped.replace(r'\?', '.')
+        return escaped
+    else:
+        # Literal filename: escape regex metacharacters
+        return re.escape(pattern)
+
+def write_deny_blocks(f, deny_files, deny_patterns):
+    for fname in deny_files:
+        escaped = re.escape(fname)
+        f.write(f'<Files ~ "^{escaped}$">\n')
+        f.write("  Require all denied\n")
+        f.write("</Files>\n")
+    for pattern in deny_patterns:
+        regex = _glob_to_regex(pattern)
+        f.write(f'<Files ~ "{regex}$">\n')
+        f.write("  Require all denied\n")
+        f.write("</Files>\n")
+
+def write_autoreadme_signature(fp, filename):
+    fp.write("# 🚧✨ This file ({} ) was generated by AutoReadme ✨🚧\n".format(filename))
+    #p.write("# https://github.com/your-repo/AutoReadme ___🌵____🚂🚃🚃🚃_____🌲🌲🌲\n\n")
+    fp.write("# ___🌵___________🌵_______🌵______________________🚂🚃🚃🚃_____🌲🌲🌲\n\n")
+
+def generate_contents(readme_path, contents_path, deny_files, deny_patterns, sorted_entries):
+    with contents_path.open("w") as c:
+        write_autoreadme_signature(c,contents_path)
+        for _, desc, name in sorted_entries:
+            line = f'AddDescription "{escape_html(desc)}" "{escape_html(name)}"\n'
+            c.write(line)
+
+        c.write("\n# 🛡️ Ignore sensitive files\n")
+        write_deny_blocks(c, deny_files, deny_patterns)
+
+        c.write("\n# 🤖 Files to Display\n")
+        c.write("HeaderName .header.html\n")
+        c.write("ReadmeName .readme.html\n")
+
+        c.write("\n# 🔧 Additional directives from README.md\n")
+        with readme_path.open() as f:
+            for line in f:
+                if line.startswith("[.contents"):
+                    content = line.split("[.contents", 1)[1].strip()
+                    #ontent = content.rstrip("]").rstrip("]: #").strip()
+                    content = content.rsplit("]: #", 1)[0].strip()
+                    if content:
+                        c.write(content + "\n")
+
+def generate_htaccess(readme_path, htaccess_path, deny_files, deny_patterns, sorted_entries):
+    with htaccess_path.open("w") as h:
+        write_autoreadme_signature(h,htaccess_path)
+        for _, desc, name in sorted_entries:
+            line = f'AddDescription "{escape_html(desc)}" "{escape_html(name)}"\n'
+            h.write(line)
+
+        h.write("\n# 🛡️ Ignore sensitive files\n")
+        write_deny_blocks(h, deny_files, deny_patterns)
+
+        h.write("\n# 🤖 Files to Display\n")
+        h.write("HeaderName .header.html\n")
+        h.write("ReadmeName .readme.html\n")
+
+        h.write("\n# 🔧 Additional directives from README.md\n")
+        with readme_path.open() as f:
+            for line in f:
+                if line.startswith("[.htaccess"):
+                    content = line.split("[.htaccess", 1)[1].strip()
+                    #ontent = content.rstrip("]").rstrip("]: #").strip()
+                    content = content.rsplit("]: #", 1)[0].strip()
+                    if content:
+                        h.write(content + "\n")
+
+def generate_info(info_path, sorted_entries):
+    with info_path.open("w") as i:
+        write_autoreadme_signature(i,info_path)
+        for _, desc, name in sorted_entries:
+            i.write(f'{name}\n')
+            i.write(f'\t"{desc}"\n')
+
+def main():
+    args = parse_arguments()
+    base_path = Path(args.directory)
+    readme_path = base_path / "README.md"
+    htaccess_config_patterns = filter_existing_patterns(base_path, load_ignore_patterns(HTACCESS_IGNORE_FILE))
+    htaccess_ignore_patterns = args.ignore_patterns + htaccess_config_patterns
+
+    sorted_entries = get_sorted_entries(readme_path, args.ignore)
+
+    generate_contents(readme_path, base_path / ".contents", args.ignore, args.ignore_patterns, sorted_entries)
+    generate_info(base_path / ".info", sorted_entries)
+    if not args.no_htaccess:
+        generate_htaccess(readme_path, base_path / ".htaccess", args.ignore, htaccess_ignore_patterns, sorted_entries)
+
+if __name__ == "__main__":
+    main()
+    print("✅ Success: .htaccess, .contents and .info created from $README ✨")
+
+# vi: ft=python et ts=4 sw=4 sts=4

@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+# 🌵 autoreadme — merge generated table with existing README.md descriptions
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+
+import sys
+import re
+import unicodedata
+
+# Files to ignore in the merged output
+IGNORE_LIST = {
+    "README.md", ".htaccess", ".readme.html", ".header.html",
+    ".contents", ".info", ".gitignore"
+}
+
+def parse_table_lines(lines):
+    """Parses table lines: returns {filename: (emoji, desc)}"""
+    entries = {}
+    for line in lines:
+        #   match = re.match(r'^\|\s*(!?\S+)\s*\|\s*(..)\s*\|\s*(.*?)\s*\|$', line)
+        # This regex accounts for escaped pipes (\|) in the description
+        # match = re.match(r'^\|\s*(!?\S+)\s*\|\s*(..)\s*\|((?:[^|\\]|\\.)+)\|$', line)
+        # Match rows with optional emoji and possible escaped pipes in the description
+        match = re.match(r'^\|\s*(!?\S*)\s*\|\s*(\S*)\s*\|\s*((?:[^|\\]|\\.)+)\s*\|$', line)
+        if match:
+            name, emoji, desc = match.groups()
+            if name.lstrip("!").rstrip("/") not in IGNORE_LIST:
+                entries[name] = (emoji.strip(), desc.strip())
+    return entries
+
+def read_readme_table(path="README.md"):
+    entries = {}
+    with open(path, 'r') as f:
+        lines = f.readlines()
+    files_section_found = False
+    in_table = False
+    for line in lines:
+        if line.startswith('## Files'):
+            files_section_found = True
+            continue
+        if not files_section_found:
+            continue
+        if line.startswith('| File'):
+            in_table = True
+            continue
+        if line.startswith('|-'):
+            continue
+        if line.startswith('|:-'):
+            continue
+        if in_table:
+            if not line.strip().startswith('|'):
+                in_table = False
+                continue
+            parsed = parse_table_lines([line])
+            entries.update(parsed)
+    return entries
+
+def read_stdin_table():
+    lines = sys.stdin.read().splitlines()
+    filtered = [
+        line for line in lines
+        if not line.startswith('| File') and not re.match(r'^\|\-+', line)
+    ]
+    entries = parse_table_lines(filtered)
+    return {k.lstrip('!'): v for k, v in entries.items()}
+
+def natural_sort_key(name):
+    s = name.lstrip("!")
+    hidden = s.startswith(".")
+    parts = re.split(r'(\d+)', s.lower())
+    parts = [int(p) if p.isdigit() else p for p in parts]
+    return (hidden, parts)
+
+def display_width(s):
+    """Display width of a string, accounting for wide/emoji characters."""
+    w = 0
+    for ch in s:
+        if unicodedata.east_asian_width(ch) in ('W', 'F') or ord(ch) >= 0x1F000:
+            w += 2
+        elif unicodedata.category(ch)[0] in ('M', 'C'):
+            continue
+        else:
+            w += 1
+    return w
+
+def ljust_wide(s, width):
+    """Left-justify string to target display width."""
+    pad = width - display_width(s)
+    return s + ' ' * max(pad, 0)
+
+def format_table(merged):
+    if not merged:
+        return []
+
+    filenames = sorted(merged.keys(), key=natural_sort_key)
+
+    max_name_len = max(display_width(name) for name in filenames) + 2
+    max_desc_len = max(display_width(desc) for _, desc in merged.values())
+    emoji_col = 4
+
+    name_col = max(max_name_len, 20)
+    desc_col = max(max_desc_len, 20)
+
+    # Compute total width and ensure it's at least 72
+    total_width = name_col + emoji_col + desc_col + 6
+    if total_width < 72:
+        desc_col += (72 - total_width)
+        total_width = 72
+
+    header = f"| {ljust_wide('File', name_col)} | 🧿 | {ljust_wide('Description', desc_col)} |"
+    divider = f"|{'-' * (name_col + 2)}|{'-' * emoji_col}|{'-' * (desc_col + 2)}|"
+    rows = [header, divider]
+
+    for name in filenames:
+        emoji, desc = merged[name]
+        emoji_cell = f" {emoji} " if emoji else "   "
+        if name.startswith("!"):
+            name_cell = f"|{ljust_wide(name, name_col + 1)}"
+        else:
+            name_cell = f"| {ljust_wide(name, name_col)}"
+        rows.append(f"{name_cell} |{emoji_cell}| {ljust_wide(desc, desc_col)} |")
+
+    return rows
+
+def main():
+    readme_entries = read_readme_table()
+    stdin_entries = read_stdin_table()
+    merged = {}
+
+    readme_keys = set(readme_entries.keys())
+    stdin_keys = set(stdin_entries.keys())
+
+    # Normalize keys: strip ! prefix and trailing / for comparison
+    normalized_readme = {k.lstrip("!").rstrip("/"): k for k in readme_keys}
+    normalized_stdin = {k.rstrip("/"): k for k in stdin_keys}
+
+    # First, keep everything from README (with ! prefix if present)
+    for rkey in readme_keys:
+        norm_key = rkey.lstrip("!").rstrip("/")
+        if norm_key in IGNORE_LIST:
+            continue
+        # Look up in stdin using normalized key
+        skey = normalized_stdin.get(norm_key)
+        emoji, _ = stdin_entries.get(skey, ("  ", "")) if skey else ("  ", "")
+        desc = readme_entries[rkey][1]
+        if readme_entries[rkey][0]:
+            emoji = readme_entries[rkey][0]
+        # Use stdin key format (with /) if available and entry isn't marked removed
+        output_key = skey if skey and not rkey.startswith("!") else rkey
+        merged[output_key] = (emoji, desc)
+
+    # Then add remaining stdin entries not already in README
+    for skey in stdin_keys:
+        norm_skey = skey.rstrip("/")
+        if norm_skey in normalized_readme or norm_skey in IGNORE_LIST:
+            continue
+        emoji, desc = stdin_entries[skey]
+        merged[skey] = (emoji, desc)
+
+    for line in format_table(merged):
+        print(line)
+
+if __name__ == "__main__":
+    main()

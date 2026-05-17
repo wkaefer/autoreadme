@@ -1,0 +1,54 @@
+.TH CHECKREADME 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+checkreadme \- Validate README.md file table against actual directory contents
+.SH SYNOPSIS
+.B checkreadme
+.SH DESCRIPTION
+.B checkreadme
+validates that the file table in README.md accurately reflects the current directory contents. It checks for:
+.IP \(bu 2
+Files that exist but are not listed in README.md
+.IP \(bu 2
+Files listed in README.md but not found in directory
+.IP \(bu 2
+Empty descriptions in the table
+.IP \(bu 2
+Proper table formatting
+.PP
+Files marked with '!' prefix (older/removed files) are allowed to be missing.
+.SH EXIT STATUS
+.TP
+.B 0
+README.md table is valid
+.TP
+.B 1
+Issues found in README.md table
+.SH OUTPUT
+Prints validation results:
+.IP \(bu 2
+"✅ README.md file table is valid." on success
+.IP \(bu 2
+Detailed error messages for each issue found
+.SH EXAMPLES
+.TP
+Validate current README.md:
+.B checkreadme
+.SH FILES
+.TP
+.B README.md
+The README file to validate
+.TP
+.B ignore_list.txt
+Local ignore list file
+.TP
+.B ~/.config/autoreadme/ignore_list.txt
+User-specific ignore list
+.TP
+.B .gitignore
+Git ignore rules are respected
+.SH SEE ALSO
+.BR generate_table (1),
+.BR merge_table (1),
+.BR autoreadme (1)
+.SH AUTHOR
+AutoReadme project

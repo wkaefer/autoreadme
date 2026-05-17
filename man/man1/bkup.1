@@ -1,0 +1,49 @@
+.TH BKUP 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+bkup \- Create timestamped backups of files
+.SH SYNOPSIS
+.B bkup
+[\fB\-r\fR] [\fB\-\-help\fR] \fIFILE\fR [\fIFILE\fR...]
+.SH DESCRIPTION
+.B bkup
+creates numbered backup copies of files in a .backups/ directory. Each backup gets a three-digit suffix (.001, .002, etc.) and the tool maintains up to MAX_BKUP versions.
+.PP
+When the maximum number of backups is reached, the oldest backup is overwritten.
+.SH OPTIONS
+.TP
+.B \-r
+Remove the original file after creating backup (move instead of copy)
+.TP
+.B \-\-help
+Show help message and exit
+.SH ARGUMENTS
+.TP
+.B FILE
+One or more files to backup. Only regular files are processed.
+.SH ENVIRONMENT VARIABLES
+.TP
+.B MAX_BKUP
+Maximum number of backups to retain. Default: 999
+.SH FILES
+.TP
+.B .backups/
+Directory where backups are stored
+.TP
+.B recycle.jpg
+If present in the script directory, copied as folder.jpg to .backups/ directories
+.SH EXAMPLES
+.TP
+Backup a single file:
+.B bkup myfile.txt
+.TP
+Backup multiple files:
+.B bkup *.conf *.log
+.TP
+Move file to backup (remove original):
+.B bkup \-r oldfile.txt
+.SH SEE ALSO
+.BR autoreadme (1),
+.BR cp (1),
+.BR mv (1)
+.SH AUTHOR
+AutoReadme project

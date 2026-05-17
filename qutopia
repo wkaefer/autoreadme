@@ -1,0 +1,186 @@
+#!/usr/bin/ksh93
+# 🌵 autoreadme — Qutopia: terminal art and philosophical wisdom
+# 📦 Part of: https://github.com/wkaefer/autoreadme
+# ⚠️  Edit in the autoreadme repo to avoid drift.
+#
+# A fleeting glimpse of terminal wisdom before reality asserts dominance.
+
+set -e
+clear
+hr
+
+QUTOPIA_DIR="$HOME/.local/share/qutopia/qutopia"
+CRASH_LOG="$HOME/.local/share/qutopia/qutopia_crash.log"
+
+# Check chafa
+if ! command -v chafa >/dev/null 2>&1; then
+    print "🔴 chafa not found. Qutopia cannot render qutopia without it."
+    exit 1
+fi
+
+# Get a random qutopia image
+integer -a QUTOPIA_LIST
+set -A QUTOPIA_LIST -- $(find "$QUTOPIA_DIR" -type f \( -iname "*.png" -o -iname "*.jpg" \))
+
+if (( ${#QUTOPIA_LIST[@]} == 0 )); then
+    print "❌ No qutopia images found in $QUTOPIA_DIR"
+    print "Please add some .png or .jpg files to keep the illusion alive."
+    # exit 1
+else
+    QUTOPIA_IMG="${QUTOPIA_LIST[RANDOM % ${#QUTOPIA_LIST[@]}]}"
+fi
+
+function display_maxim_box {
+    typeset -A fg_colors=(
+        [red]=31 [green]=32 [yellow]=33 [blue]=34
+        [magenta]=35 [cyan]=36 [white]=37
+    )
+
+    typeset -a keys=( ${!fg_colors[@]} )
+    typeset key=${keys[RANDOM % ${#keys[@]}]}
+    typeset fg=${fg_colors[$key]}
+    typeset bg="40"  # Black Background
+    typeset style="\033[1;${fg};${bg}m"
+    typeset reset="\033[0m"
+
+    typeset maxim_line="$1"
+    typeset len=${#maxim_line}
+    typeset dashes="$(printf '─%.0s' {1..100})"
+    typeset border_top="┌${dashes:0:len+2}┐"
+    typeset border_bottom="└${dashes:0:len+2}┘"
+
+    print
+    print "$style$border_top$reset"
+    print "$style│ $maxim_line │$reset"
+    print "$style$border_bottom$reset"
+    print
+}
+
+
+# Crystal Ball Oracle
+function crystal_ball {
+    typeset -a messages=(
+        # 🪞 Know Thyself
+        "🪞 The system cannot identify you until you do."
+        "🪞 Echoes of self-reflection bounce off the shell."
+        "🪞 You are not your \$USER. But it’s a start."
+        "🪞 The prompt knows more than you think."
+        "🪞 The shell is just the surface — dig deeper."
+        "🪞 If you don't know your \$0, how can you run anything?"
+        "🪞 Variables reflect your choices — make them global with care."
+        "🪞 The login prompt asks who you are — answer honestly."
+        "🪞 Debug the self before debugging the script."
+        "🪞 You cannot grep for truth unless you log it first."
+        "🪞 \$HOME  is not your true home — but it’s close."
+        "🪞 Even root must face the mirror."
+
+        # ⚖️ Nothing in Excess
+        "⚖️ Too many flags spoil the command."
+        "⚖️ Balance your pipes. Even '|' must rest."
+        "⚖️ More output doesn’t mean more meaning."
+        "⚖️ Silence is a valid return value."
+        "⚖️ One more alias and the whole alias table tips."
+        "⚖️ Let your prompts breathe — don't over-theme."
+        "⚖️ Use '-v' when needed, and not a flag more."
+        "⚖️ Even 'find' must eventually stop."
+        "⚖️ Too many functions? You're scripting a novel, not a utility."
+        "⚖️ Silence is golden. So is '2>/dev/null'."
+        "⚖️ You don't need to monitor the monitor."
+        "⚖️ Comments should explain, not apologize."
+
+        # ☠️ Surety Brings Ruin
+        "☠️ When the script assumes, the core dumps."
+        "☠️ Only fools 'rm -rf' with confidence."
+        "☠️ Certainty killed the debugger."
+        "☠️ Unset your expectations. Or be set ablaze."
+        "☠️ Trusting user input is like `eval` without a helmet."
+        "☠️ The confident 'rm' is the deadliest command."
+        "☠️ Version control exists because we don’t."
+        "☠️ \"It worked yesterday\" is not a rollback plan."
+        "☠️ If you're sure, you're probably not logging."
+        "☠️ A test with no 'else' is a trap."
+        "☠️ Hard-coded paths lead to soft-bricked systems."
+        "☠️ The script ran fine... until production."
+    )
+#   print "\n🔮 Crystal Ball says: \"${messages[RANDOM % ${#messages[@]}]}\""
+#   print "\n  ${messages[RANDOM % ${#messages[@]}]}\n"
+    display_maxim_box "${messages[RANDOM % ${#messages[@]}]}"
+}
+
+# Opening sequence
+print "🌌 Initializing Qutopia Terminal Interface..."
+sleep 0.5
+print "🧰 Assembling minimalist tools... [OK]"
+sleep 0.5
+print "📚 Preloading infinite knowledge... [OK]"
+sleep 0.5
+print "🫖 Brewing enlightenment... 💡 [OK]"
+sleep 0.5
+print "📸 Rendering Qutopia...🌊 "
+sleep 0.5
+
+# Fallback ANSI art when no qutopia images are found
+function fallback_qutopia_art {
+    typeset -a palette=(
+        "\033[48;5;197m " "\033[48;5;201m " "\033[48;5;198m "
+        "\033[48;5;129m " "\033[48;5;93m " "\033[48;5;127m "
+        "\033[48;5;161m " "\033[48;5;177m " "\033[48;5;225m "
+    )
+
+    print "\n🎭 No qutopia found. Rendering fallback...\n"
+    sleep 1
+
+    for i in {1..10}; do
+        line=""
+        for j in {1..30}; do
+            color=${palette[RANDOM % ${#palette[@]}]}
+            line+="${color}█"
+        done
+        print "${line}\033[0m"
+    done
+    print
+}
+
+# Show the qutopia image
+#hafa --fill --symbols=block "$QUTOPIA_IMG"
+if [ -f "$QUTOPIA_IMG" ] ; then
+	chafa        --symbols=block --size=80% "$QUTOPIA_IMG"
+	case "$hostname" in
+		Shazam) fallback_qutopia_art;;
+	esac
+else
+	fallback_qutopia_art
+fi
+sleep 0.5
+print "🕰 Welcome to Qutopia"
+sleep 0.5
+crystal_ball
+sleep 3
+hr -m box -c -l 2
+print "💔 Fragmentation Detected: Idealism leaking into reality."
+sleep 0.5
+print "⛈  Emotional kernel panic: Cannot sustain perfection in current environment."
+sleep 0.5
+print "⚰  Terminating Qutopia instance..."
+sleep 0.5
+
+# Write crash log
+mkdir -p "$(dirname "$CRASH_LOG")"
+cat > "$CRASH_LOG" <<EOF
+[Qutopia Crash Log]
+Date: $(date)
+Uptime: $(uptime)
+Qutopia File: $(basename "$QUTOPIA_IMG")
+Reason: Reality could not maintain structural integrity in the presence of idealized states.
+Action Taken: Session forcibly ended to preserve sanity.
+Suggested Fix: Lower your standards. Or run Qutopia again.
+EOF
+
+print "📝 Crash report saved to $CRASH_LOG"
+hr --theme flowers -b
+sed 's/^/🧜‍♀️ /' ~/.local/share/qutopia/qutopia_crash.log
+
+# Kill script ungracefully
+trap '' TERM INT
+kill -9 $$
+
