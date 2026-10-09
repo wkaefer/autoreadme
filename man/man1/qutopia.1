@@ -1,0 +1,78 @@
+.TH QUTOPIA 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+qutopia \- Display terminal art with philosophical wisdom and dramatic exit
+.SH SYNOPSIS
+.B qutopia
+.SH DESCRIPTION
+.B qutopia
+is a whimsical terminal utility that displays random images with philosophical maxims, then dramatically "crashes" back to reality. It renders images using chafa and presents wisdom in decorative Unicode boxes before terminating the session ungracefully.
+.PP
+The tool searches for PNG and JPG images in ~/.local/share/qutopia/qutopia/ and displays one randomly. If no images are found, it falls back to ANSI art. Each run includes a random philosophical maxim themed around computing, self-reflection, and moderation.
+.SH REQUIREMENTS
+.B qutopia
+requires the following:
+.IP \(bu 2
+.B chafa
+- Terminal image rendering utility
+.IP \(bu 2
+.B hr
+- Horizontal rule utility (from AutoReadme suite)
+.IP \(bu 2
+.B ksh93
+- Korn shell for script execution
+.SH FILES
+.TP
+.B ~/.local/share/qutopia/qutopia/
+Directory containing PNG and JPG images for display
+.TP
+.B ~/.local/share/qutopia/qutopia_crash.log
+Crash log written after each "session termination"
+.SH FUNCTIONALITY
+The qutopia experience consists of several phases:
+.IP 1. 4
+.B Initialization
+- Displays startup messages with progress indicators
+- Clears the terminal and shows a decorative horizontal rule
+.IP 2. 4
+.B Image Display
+- Renders a random image from the qutopia directory using chafa
+- Falls back to ANSI art if no images are available
+.IP 3. 4
+.B Wisdom Revelation
+- Shows a random philosophical maxim in a colored Unicode box
+- Themes include self-reflection, moderation, and computing wisdom
+.IP 4. 4
+.B Dramatic Exit
+- Simulates a "system crash" with error messages
+- Writes a crash log with timestamp and session details
+- Terminates forcefully with kill -9
+.SH PHILOSOPHICAL THEMES
+The maxims are organized around three core themes:
+.TP
+.B 🪞 Know Thyself
+Reflections on identity, self-awareness, and introspection in computing
+.TP
+.B ⚖️  Nothing in Excess
+Wisdom about balance, simplicity, and avoiding over-engineering
+.TP
+.B ☠️  Surety Brings Ruin
+Warnings about overconfidence, assumptions, and the dangers of certainty
+.SH EXAMPLES
+.TP
+Run qutopia for a philosophical terminal experience:
+.B qutopia
+.SH ENVIRONMENT
+.TP
+.B HOME
+Used to locate the qutopia data directory (~/.local/share/qutopia/)
+.SH EXIT STATUS
+.B qutopia
+does not exit gracefully - it terminates itself with SIGKILL (9) after the crash sequence.
+.SH SEE ALSO
+.BR hr (1),
+.BR chafa (1),
+.BR autoreadme (1)
+.SH AUTHOR
+AutoReadme project
+.SH NOTES
+Qutopia serves no practical purpose but provides momentary aesthetic pleasure and philosophical contemplation before returning the user to the harsh realities of command-line computing.

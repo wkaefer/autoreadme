@@ -1,0 +1,155 @@
+.TH HR 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+hr \- Generate decorative horizontal rules with various styles and colors
+.SH SYNOPSIS
+.B hr
+[\fB\-e\fR|\fB\-\-emoji\fR \fISEQUENCE\fR] [\fB\-c\fR|\fB\-\-color\fR] [\fB\-z\fR|\fB\-\-back\fR] [\fB\-f\fR|\fB\-\-fg\fR] [\fB\-b\fR|\fB\-\-bg\fR] [\fB\-n\fR|\fB\-\-no_color\fR] [\fB\-m\fR|\fB\-\-mode\fR \fIMODE\fR] [\fB\-l\fR|\fB\-\-lines\fR \fINUM\fR] [\fB\-T\fR|\fB\-\-theme\fR \fITHEME\fR] [\fB\-\-list-themes\fR] [\fB\-\-tty\fR] [\fB\-t\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fITEXT\fR]
+.SH DESCRIPTION
+.B hr
+generates decorative horizontal rules (dividers) for console output. It supports various character modes including ASCII, emojis, box drawing characters, and playing cards. Rules can be colored, themed, and include centered text.
+.PP
+The tool automatically detects terminal width and adjusts the rule accordingly. When output is not to a terminal, colors are disabled by default.
+.SH OPTIONS
+.TP
+.B \-e, \-\-emoji \fISEQUENCE\fR
+Use emoji sequence (comma-separated). Default: 🌀
+.TP
+.B \-c, \-\-color
+Enable random ANSI foreground colors
+.TP
+.B \-z, \-\-back
+Enable random ANSI background colors
+.TP
+.B \-f, \-\-fg
+Enable foreground color (uses default yellow)
+.TP
+.B \-b, \-\-bg
+Enable background color (uses default green)
+.TP
+.B \-n, \-\-no_color
+Disable all colors
+.TP
+.B \-m, \-\-mode \fIMODE\fR
+Character mode: ascii (default), emoji, box, card
+.TP
+.B \-l, \-\-lines \fINUM\fR
+Number of horizontal rule lines to draw. Default: 1
+.TP
+.B \-T, \-\-theme \fITHEME\fR
+Use a named emoji theme (overrides -e). Available themes: mythical, flowers, succulents, veggies, fruits, trees, cosmic, birds, catsdogs, food, weather, hearts, tools, faces, random
+.TP
+.B \-\-list-themes
+Display all available theme names and exit
+.TP
+.B \-\-tty
+Force terminal mode even when output is not to a tty
+.TP
+.B \-t
+Run sample test showing various hr styles
+.TP
+.B \-h, \-\-help
+Show help message and exit
+.SH ENVIRONMENT VARIABLES
+.TP
+.B HR
+Set default style. Supported values:
+.RS
+.IP eb 4
+Blue square emoji (🟦)
+.IP eg 4
+Green square emoji (🟩)
+.IP er 4
+Red square emoji (🟥)
+.IP ey 4
+Yellow square emoji (🟨)
+.IP et 4
+Train emoji (🚂)
+.IP ee 4
+Eyes emoji (👀)
+.IP C 4
+Cyan background
+.IP M,P 4
+Magenta background
+.IP B 4
+Blue background
+.IP Y 4
+Yellow background
+.IP R 4
+Red background
+.IP G 4
+Green background (default)
+.RE
+.PP
+Command-line arguments override the
+.B HR
+variable.
+.SH CHARACTER MODES
+.TP
+.B ascii
+Alternating / and \\ characters (default)
+.TP
+.B emoji
+Random emojis from specified sequence
+.TP
+.B box
+Unicode box drawing characters
+.TP
+.B card
+Playing card symbols
+.SH EXAMPLES
+.TP
+Basic horizontal rule:
+.B hr
+.TP
+Rule with centered text:
+.B hr "Section Header"
+.TP
+Emoji rule with colors:
+.B hr \-e "🌈,🌊,✨" \-c
+.TP
+Box drawing characters:
+.B hr \-m box \-l 2
+.TP
+Using a theme:
+.B hr \-\-theme flowers
+.TP
+Environment variable usage:
+.B HR=et hr
+.SH THEMES
+Available emoji themes:
+.TP
+.B mythical
+🧜‍♀️,🧝‍♂️,🧚,🧞‍♂️,🧛‍♀️,🧙‍♀️
+.TP
+.B flowers
+🌸,🌼,🌹,🌷,💐,🌺
+.TP
+.B succulents
+🌵,🪴,🌱,🌿,🍀,🪻
+.TP
+.B veggies
+🥕,🌽,🥬,🧄,🧅,🥒,🥦,🍅,🍆
+.TP
+.B fruits
+🍓,🍉,🍌,🍍,🍒,🍇,🍑
+.TP
+.B trees
+🌳,🌲,🌴,🪵,🍃,🍂
+.TP
+.B cosmic
+🌌,🌠,⭐,✨,🔮,🪐
+.TP
+.B birds
+🦉,🦅,🕊️,🦜,🐦,🦢,🐧
+.TP
+.B catsdogs
+🐱,🐶,🐾,😺,😸,😻
+.TP
+.B food
+🍕,🍔,🌮,🍣,🍩,🍪
+.SH SEE ALSO
+.BR autoreadme (1),
+.BR echo (1),
+.BR printf (1)
+.SH AUTHOR
+AutoReadme project

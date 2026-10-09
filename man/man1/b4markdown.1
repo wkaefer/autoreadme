@@ -1,0 +1,98 @@
+.TH B4MARKDOWN 1 "March 2026" "AutoReadme" "User Commands"
+.SH NAME
+b4markdown \- Markdown preprocessor with syntax highlighting and file inclusion
+.SH SYNOPSIS
+.B b4markdown
+[\fIFILE\fR]
+.SH DESCRIPTION
+.B b4markdown
+is a preprocessor for Markdown that adds syntax highlighting markup and file inclusion capabilities before passing content to markdown_py.
+.PP
+Features:
+.IP \(bu 2
+Syntax highlighting with color markers (@- gray, @+ cyan, @g green, @b blue, @p purple, @y yellow, @r red, @o orange)
+.IP \(bu 2
+Form feed markers (@@) for page breaks
+.IP \(bu 2
+File inclusion with #include directive
+.IP \(bu 2
+Mermaid diagram support with automatic script inclusion
+.IP \(bu 2
+Markdown comment stripping
+.SH ARGUMENTS
+.TP
+.B FILE
+Input file to process. If not specified, reads from standard input.
+.SH SYNTAX HIGHLIGHTING
+Lines beginning with color markers are converted to HTML mark elements with
+highlighting applied to the end of line:
+.PP
+.nf
+@- Text in gray (to end of line)
+@g Text in green (to end of line)
+@@ Page break
+.fi
+.PP
+Inline spans use braces to delimit the highlighted region.
+Multiple inline highlights may appear on the same line:
+.PP
+.nf
+@g{green text} and @b{blue text} on one line
+00000000   @g{07 7E 00 00} @b{00 EC 00 00}
+.fi
+.PP
+Inline highlights survive inside Markdown code blocks (indented or
+fenced).  The preprocessor encodes them as ASCII placeholders before
+.B markdown_py
+runs, then restores the
+.B <mark>
+tags afterward.
+.PP
+Available colors for both line and inline forms:
+.TS
+l l.
+@-	gray
+@+	cyan
+@g	green
+@b	blue
+@p	purple
+@y	yellow
+@r	red
+@o	orange
+.TE
+.SH FILE INCLUSION
+Include other files with:
+.PP
+.nf
+#include filename.md
+.fi
+.SH MERMAID DIAGRAMS
+Mermaid code blocks are automatically enhanced with the Mermaid.js library.
+.SH OUTPUT
+HTML output from markdown_py with additional markup for highlighting and diagrams.
+.SH EXAMPLES
+.TP
+Process a file:
+.B b4markdown document.md
+.TP
+Process from stdin:
+.B cat document.md | b4markdown
+.TP
+Line-level highlight (green to end of line):
+.B @gThis entire line is green
+.TP
+Inline highlight inside a code block:
+.nf
+	00000000   @g{07 7E 00 00} @b{00 EC 00 00} - AA 40
+.fi
+.TP
+Use in pipeline:
+.B generate_html uses b4markdown internally
+.SH DEPENDENCIES
+Requires markdown_py with extra extensions for full functionality.
+.SH SEE ALSO
+.BR generate_html (1),
+.BR markdown_py (1),
+.BR autoreadme (1)
+.SH AUTHOR
+AutoReadme project

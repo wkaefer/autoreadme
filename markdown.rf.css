@@ -1,0 +1,353 @@
+/* 🌵 autoreadme — right-frame CSS variant (used when images are present)
+ * 📦 Part of: https://github.com/wkaefer/autoreadme
+ * ⚠️  Edit in the autoreadme repo to avoid drift.
+ */
+/*
+ *
+ * This is the markdown.css use in apache output from
+ * directory listings.
+ *
+ *  IndexStyleSheet "/.kaefer.css"
+ *
+ * It is called markdown.css, because most of the 
+ * web pages servered were created using markdown.
+ *
+ * This is the checkreadme script which calls
+ * a markdown program to create files from the README.md
+ * file.
+ *
+ * This file needs to be excluded in the apache configuration
+ * for the content server.
+
+ * lighter  darker
+ * CFDEE9 - blue(darker)
+ * E4EEF8 - BED5EE blue
+ * E5F1CC - BEDC7F green
+ * FAEFD0 - F3D788 yellow
+ * F7DCCC - ECA77F red
+ * EEE2D7 - brown
+ * E8E5E2 - black on grey
+ */
+
+.tartan	{ font-size: smaller; color: blue }
+.calendar { font-size: smaller }
+
+/* doctype html */
+
+html {
+	height:100%;
+	width:100%;
+}
+
+body {
+	font-size:20px;
+	/*font-family:monospace;*/
+	font-family: monospace, sans-serif, arial, helvetica, Fixedsys, "8514fix";
+	/*font-family: sans-serif, arial, helvetica, monospaced, Fixedsys, "8514fix";*/
+	color:black;
+	/* background:#E5F1CC;  	 * WindStream Light Green */
+	/* background:#F0E68C;		 * Khaki */
+	/* background:#FAFAD2;		 * Lightgoldenrodyellow */
+	/* background:#FAFAD2;		 * Linen */
+	/* background:#FFF5EE;		 * SeaShell */
+	/* background:#F5F5F5;		 * WhiteSmoke */
+	/* background:#FFFAFA;		 * Snow */
+	/* background:#FFFFE0;		 * Light Yellow */
+	/* background:#FFFFF8;		 * Light Yellow */
+	/* background:#F0F0F0;		 * Light Grey   */
+	/* background:#FCFFFC;		 * Light Green  */
+	   background:#F5FFFA;		/* Mint Green  */
+	/*
+	Ivory
+		- Hex: #FFFFF0
+		- A slightly off-white color with a touch of warmth.
+	Light Tan
+		- Hex: #D2B48C
+		- A pale brown that is easy on the eyes and gives a parchment-like feel.
+	Cream
+		- Hex: #FFFDD0
+		- A very light yellowish color, soothing and gentle.
+	Antique White
+		- Hex: #FAEBD7
+		- A warm white with a slight hint of yellow or brown, resembling aged paper.
+	Mint Green
+		- Hex: #F5FFFA
+		- This color provides a subtle hint of green while remaining light and soft on the eyes.
+	*/
+	/*height:100%;*/
+	/*width:100%;*/
+	/*
+	padding-top:20px;
+	padding-left:20px;
+	padding-right:20px;
+	padding-bottom:40px;
+	border-top:20px;
+	border-left:20px;
+	border-right:20px;
+	border-bottom:40px;
+	margin-top:20px;
+	margin-left:20px;
+	margin-right:20px;
+	margin-bottom:40px;
+	*/
+    /*  overflow:hidden;  * Because for an iframe, you will end up with two scroll bars */
+    /*	overflow:hidden; */
+	/*	overflow:auto; */
+	display: flex
+}
+
+.main-content {
+	flex: 1;
+	padding: 1em;
+}
+
+h1 {
+	color: green;
+}
+
+h2 {
+	color: orange;
+}
+
+h3 {
+	color: royalblue;
+}
+
+h5 {
+	color: red;
+}
+
+h6 {
+	color: forestgreen;
+}
+
+
+
+
+hr {
+	display:block;
+	border:none;
+	height:10px;
+	background-image:url('/icons/gunn.gif');
+	}
+
+a:hover {
+	color:yellow;
+	background: #7DBA00;
+}
+
+pre a:hover {
+	color:yellow;
+	background: #7DBA00;
+}
+
+a:active {
+	background-image: url('/.icons/gunn.gif'); /* /console/gunn.gif */
+}
+
+a:focus {
+	background-color:yellow;
+}
+
+a:link {
+	color:blue;
+	text-decoration:none;
+}
+
+a:visited {
+	color:blue;
+/*	background:#eff5f8;*/
+/*	text-decoration:none;*/
+}
+
+/////////////////////////////////////////////////////////////////////
+ul {
+	/*font-family:monospace;*/
+	list-style-image: url('/.icons/small_green_ball.gif');
+    //list-style: none; /* Remove default list styling */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
+}
+
+/* List Items */
+
+li {
+    /*display: flex;  Use flexbox to allow content to expand */
+    display: block;
+    align-items: center; /* Center items vertically */
+    text-align: left;
+    justify-content: space-between; /* Distribute space between the content and button */
+    width: 100%; /* Ensure the list item takes up the full width */
+    margin: 0;
+    padding: 0;
+}
+
+li .content {
+    flex-grow: 1; /* Allow the content to grow and fill the space */
+}
+
+li button {
+    margin-left: auto; /* Ensure the button stays on the far right */
+}
+
+/* QBOT: css syntax by heirarchy in file */
+ul li ul li {
+	list-style-image: url('/.icons/small_blue_ball.gif');
+}
+
+/* doesn't really work for ie? */
+li:hover { 
+	background-color:#E4EEF8;
+}
+	
+/* Tables */
+
+table {
+/*	border-width:1; */
+	/* border: solid thin;*/
+	border: 2px solid #009879;
+	width:100%;
+	/*font-size:12px;*/
+	/*font-family: monospace;*/
+}
+
+th {
+	border: 1px solid #dddddd;
+	background: #BEDC7F;
+}
+
+tbody tr {
+	border: 1px solid #E4EEFB;
+}
+
+td  {
+	border: 1px solid #dddddd;
+}
+
+
+
+input {
+	background-color:#77EE77;
+}
+
+
+pre {
+	/*font-size:12px;*/
+	/*font-family: monospace;*/
+}
+
+code.sh {
+		background-color: #e5f1cc;
+    	font-weight:bold;
+}
+
+mark.gray {
+		background-color: #c5beb7;
+}
+
+mark.cyan {
+		background-color: #0fffff;
+}
+
+mark.green {
+		background-color: #bedc7f;
+}
+
+mark.blue {
+		background-color: #bcd5ee;
+}
+
+mark.purple {
+		background-color: #dda0dd;
+}
+
+mark.yellow {
+		background-color: #f3d788;
+}
+
+mark.red {
+		background-color: #eca77f;
+}
+
+mark.orange {
+		background-color: #ff9900;
+}
+
+/* Admontions */
+.admonition {
+  border-left: 5px solid #4CAF50; /* Green border */
+  background-color: #f9f9f9; /* Light grey background */
+  padding: 10px 15px; /* Padding for spacing */
+  margin: 20px 0; /* Margin for spacing between elements */
+  border-radius: 5px; /* Rounded corners */
+}
+
+.admonition-title {
+  font-weight: bold; /* Bold title */
+  font-size: 1.2em; /* Larger font size */
+  margin-bottom: 10px; /* Space below title */
+  color: #4CAF50; /* Green title color */
+  text-transform: uppercase; /* Capitalize title */
+}
+
+.admonition p {
+  margin: 0; /* Remove default margin */
+  font-size: 1em; /* Standard font size */
+  line-height: 1.5; /* Line height for readability */
+}
+
+.note {
+	/*background-image:url('/.icons/corn.gif');*/
+	}
+
+
+.indexcoldesc {
+	color=red;
+	}
+
+li {
+    position: relative; /* Ensure the li element is positioned relatively to contain the button */
+}
+
+li button {
+    background-color: transparent; /* Make the button background transparent */
+    position: absolute;
+    right: 0; /* Align the button to the far right */
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust the vertical alignment */
+    border: none; /* Remove the border */
+    color: inherit; /* Inherit text color from the parent element */
+    font: inherit; /* Inherit font properties (family, size, weight, etc.) from the parent element */
+    padding: 0; /* Remove padding to prevent additional spacing */
+    cursor: pointer; /* Ensure the cursor shows as a pointer (hand) */
+    outline: none; /* Remove the default outline on focus */
+}
+
+/* Does not work */
+li button:hover {
+	color=red;
+}
+
+.right-frame {
+  width: 20%;
+  max-width: 20vw;
+  background-color: #f4f4f4;
+  overflow-y: auto;
+  padding: 1em;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
+
+.right-frame a {
+  text-decoration: none;
+}
+
+.right-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 1em;
+  object-fit: contain;
+  max-width: 100%;
+  border: 1px solid #ccc;
+}
+
